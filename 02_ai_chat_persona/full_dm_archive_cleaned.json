@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "inbound": "Hi there!",
+      "response": "Hey babe \ud83d\ude18 how\u2019s your day?"
+    },
+    {
+      "inbound": "Can I see your latest set?",
+      "response": "Of course! Just dropped a hot one \ud83d\udd25"
+    }
+  ]
+}

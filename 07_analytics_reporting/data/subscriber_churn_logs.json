@@ -1,0 +1,14 @@
+{
+  "log": [
+    {
+      "user": "A123",
+      "cancelled": "2025-04-02",
+      "reason": "Not enough content"
+    },
+    {
+      "user": "B234",
+      "cancelled": "2025-04-04",
+      "reason": "Price"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+subscriber_id,variant,conversion,amount_spent
+101,A,true,19.99
+102,B,false,0.00
+103,A,true,19.99
+104,B,true,24.99
