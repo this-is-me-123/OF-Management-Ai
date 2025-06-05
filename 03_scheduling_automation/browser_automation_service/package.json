@@ -1,0 +1,13 @@
+{
+  "name": "of-management-ai",
+  "version": "1.0.0",
+  "scripts": {
+    "lint": "eslint '**/*.js'",
+    "format": "prettier --write '**/*.{js,json,md}'",
+    "lint:py": "flake8 .",
+    "format:py": "black . && isort ."
+  },
+  "dependencies": {
+    "git": "^0.1.5"
+  }
+}
