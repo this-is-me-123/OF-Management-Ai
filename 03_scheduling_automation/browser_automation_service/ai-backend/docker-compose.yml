@@ -1,0 +1,85 @@
+services:
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ofm-api-server
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - .:/usr/src/app # Mount local code for development
+      - /usr/src/app/node_modules # Don't mount local node_modules
+    command: node server.js
+    restart: always
+
+  crm-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ofm-crm-processor
+    depends_on:
+      - api-server # Optional: wait for api-server to be healthy if needed, though not strictly necessary here
+    env_file:
+      - .env
+    volumes:
+      # Mount specific files
+      - ./automationWorker.js:/usr/src/app/automationWorker.js:ro
+      - ./openaiService.js:/usr/src/app/openaiService.js:ro
+      - ./package.json:/usr/src/app/package.json:ro
+      - ./package-lock.json:/usr/src/app/package-lock.json:ro
+      - ./scheduler.js:/usr/src/app/scheduler.js:ro
+      - ./server.js:/usr/src/app/server.js:ro
+      - ./supabase_integration.js:/usr/src/app/supabase_integration.js:ro
+      - ./testAdFeatures.js:/usr/src/app/testAdFeatures.js:ro
+      - ./testCrmFeatures.js:/usr/src/app/testCrmFeatures.js:ro
+      # Mount specific directories
+      - ./ads:/usr/src/app/ads:ro
+      - ./analytics:/usr/src/app/analytics:ro
+      - ./chat:/usr/src/app/chat:ro
+      - ./crm:/usr/src/app/crm:ro
+      - ./proxy:/usr/src/app/proxy:ro
+      - ./utils:/usr/src/app/utils:ro
+      # Keep the anonymous volume for node_modules to use the container's version
+      - /usr/src/app/node_modules
+    command: node crm/crmActionProcessor.js
+    restart: always
+
+  automation-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ofm-automation-worker
+    depends_on:
+      - api-server # Optional
+    env_file:
+      - .env
+    volumes:
+      # Mount specific files
+      - ./automationWorker.js:/usr/src/app/automationWorker.js:ro
+      - ./openaiService.js:/usr/src/app/openaiService.js:ro
+      - ./package.json:/usr/src/app/package.json:ro
+      - ./package-lock.json:/usr/src/app/package-lock.json:ro
+      - ./scheduler.js:/usr/src/app/scheduler.js:ro
+      - ./server.js:/usr/src/app/server.js:ro
+      - ./supabase_integration.js:/usr/src/app/supabase_integration.js:ro
+      - ./testAdFeatures.js:/usr/src/app/testAdFeatures.js:ro
+      - ./testCrmFeatures.js:/usr/src/app/testCrmFeatures.js:ro
+      # Mount specific directories
+      - ./ads:/usr/src/app/ads:ro
+      - ./analytics:/usr/src/app/analytics:ro
+      - ./chat:/usr/src/app/chat:ro
+      - ./crm:/usr/src/app/crm:ro
+      - ./proxy:/usr/src/app/proxy:ro
+      - ./utils:/usr/src/app/utils:ro
+      # Keep the anonymous volume for node_modules to use the container's version
+      - /usr/src/app/node_modules
+    # Puppeteer in Docker might need additional capabilities or to disable the sandbox
+    # If you encounter issues with Puppeteer starting, you might need one of these:
+    # cap_add:
+    #   - SYS_ADMIN
+    # Or, modify the Puppeteer launch arguments in your code:
+    # args: ['--no-sandbox', '--disable-setuid-sandbox']
+    command: node automationWorker.js
+    restart: always

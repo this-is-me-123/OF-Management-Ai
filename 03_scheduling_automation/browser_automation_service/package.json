@@ -8,6 +8,13 @@
     "format:py": "black . && isort ."
   },
   "dependencies": {
-    "git": "^0.1.5"
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "git": "^0.1.5",
+    "puppeteer": "^22.0.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
