@@ -67,7 +67,29 @@ async function handleSendDm(job) {
     if (!globalPage || globalPage.isClosed()) {
         console.error('  [JOB_HANDLER] Global page is not available or closed. Attempting to re-login/re-initialize.');
         // Attempt to re-initialize. This is a simple recovery, might need more robust handling.
-        const loginResult = await loginOnlyFans({ existingBrowser: globalBrowser, headless: process.env.HEADLESS !== 'false' });
+        const onlyfansUsername = process.env.ONLYFANS_USERNAME;
+        const onlyfansPassword = process.env.ONLYFANS_PASSWORD;
+        if (!onlyfansUsername || !onlyfansPassword) {
+            console.error('  [JOB_HANDLER] CRITICAL: Missing credentials for re-login attempt.');
+            return { success: false, details: 'Missing credentials for re-login.' };
+        }
+        // Prepare proxy options from environment variables for re-login
+        const proxyOptionsRelogin = {};
+        if (process.env.PROXY_HOST && process.env.PROXY_PORT) {
+            proxyOptionsRelogin.host = process.env.PROXY_HOST;
+            proxyOptionsRelogin.port = process.env.PROXY_PORT;
+            if (process.env.PROXY_USERNAME && process.env.PROXY_PASSWORD) {
+                proxyOptionsRelogin.username = process.env.PROXY_USERNAME;
+                proxyOptionsRelogin.password = process.env.PROXY_PASSWORD;
+            }
+        }
+
+        const reloginPuppeteerOpts = {
+            existingBrowser: globalBrowser, 
+            headless: process.env.HEADLESS !== 'false',
+            ...(Object.keys(proxyOptionsRelogin).length > 0 && { proxy: proxyOptionsRelogin })
+        };
+        const loginResult = await loginOnlyFans(onlyfansUsername, onlyfansPassword, reloginPuppeteerOpts);
         if (!loginResult.success || !loginResult.page) {
             console.error('  [JOB_HANDLER] Failed to re-initialize Puppeteer page. Skipping job.');
             return { success: false, details: 'Failed to re-initialize Puppeteer page.' };
@@ -147,8 +169,36 @@ async function processJob(job) {
 async function main() {
     console.log('Starting Automation Worker...');
 
+    const onlyfansUsername = process.env.ONLYFANS_USERNAME;
+    const onlyfansPassword = process.env.ONLYFANS_PASSWORD;
+
+    if (!onlyfansUsername || !onlyfansPassword) {
+        console.error('CRITICAL: ONLYFANS_USERNAME or ONLYFANS_PASSWORD environment variables are not set. Worker cannot start.');
+        process.exit(1);
+    }
+
+    // Prepare proxy options from environment variables
+    const proxyOptions = {};
+    if (process.env.PROXY_HOST && process.env.PROXY_PORT) {
+        proxyOptions.host = process.env.PROXY_HOST;
+        proxyOptions.port = process.env.PROXY_PORT;
+        if (process.env.PROXY_USERNAME && process.env.PROXY_PASSWORD) {
+            proxyOptions.username = process.env.PROXY_USERNAME;
+            proxyOptions.password = process.env.PROXY_PASSWORD;
+        }
+        console.log(`[AutomationWorker] Proxy configured: ${proxyOptions.host}:${proxyOptions.port}`);
+    } else {
+        console.log('[AutomationWorker] No proxy host/port configured in environment variables.');
+    }
+
+    const puppeteerLaunchOpts = {
+        headless: process.env.HEADLESS !== 'false',
+        ...(Object.keys(proxyOptions).length > 0 && { proxy: proxyOptions }) // Add proxy to options if configured
+    };
+
     console.log('Initializing Puppeteer and logging into OnlyFans...');
-    const loginResult = await loginOnlyFans({ headless: process.env.HEADLESS !== 'false' }); // Launch new browser
+    // Pass username, password, and then an options object for proxy/headless settings
+    const loginResult = await loginOnlyFans(onlyfansUsername, onlyfansPassword, puppeteerLaunchOpts); 
 
     if (!loginResult.success || !loginResult.browser || !loginResult.page) {
         console.error('Failed to initialize Puppeteer and log in to OnlyFans. Worker cannot start.');
