@@ -3,6 +3,7 @@ const { addExtra } = require('puppeteer-extra'); // Import the addExtra wrapper
 const puppeteer = addExtra(puppeteerCore); // This is now your puppeteer-extra instance using puppeteer-core
 const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const { spawnSync } = require('child_process'); // For diagnostic spawn
 
 // Configure and use the Recaptcha plugin if API key is available
 const TWO_CAPTCHA_API_KEY = process.env.TWOCAPTCHA_API_KEY;
@@ -78,15 +79,10 @@ async function checkLoginStatus(page) {
  * @returns {Promise<{browser: object, page: object, success: boolean, error: string|null}>}
  */
 async function loginOnlyFans(options = {}) {
-  console.log('[PuppeteerLogin] Entering loginOnlyFans function.');
-  try {
-    console.log(`[PuppeteerLogin] Attempting to get executable path from puppeteer-extra instance...`);
-    console.log(`[PuppeteerLogin] Puppeteer executable path: ${puppeteer.executablePath()}`);
-  } catch (e) {
-    console.error('[PuppeteerLogin] Error getting executable path:', e);
-  }
+  console.log('[PuppeteerLogin] Entering loginOnlyFans function. CODE VERSION: FULL_REPLACE_V3_FINAL');
   let browser = options.existingBrowser;
   let page;
+  let newBrowserLaunched = false; // Flag to track if this call launched the browser
   const { OF_EMAIL, OF_PASSWORD } = process.env;
 
   if (!OF_EMAIL || !OF_PASSWORD) {
@@ -94,184 +90,262 @@ async function loginOnlyFans(options = {}) {
     return { browser: null, page: null, success: false, error: 'OnlyFans credentials not found in environment variables.' };
   }
 
-  try {
-    if (!browser || !browser.isConnected()) {
-      console.log('[PuppeteerLogin] No existing browser or not connected, launching new browser...');
+  const useProxy = process.env.PROXY_HOST && process.env.PROXY_PORT && process.env.PROXY_USER && process.env.PROXY_PASS;
 
-      console.log('[PuppeteerLogin] Accessing environment variables for proxy...');
-      const { PROXY_HOST, PROXY_PORT, PROXY_USER, PROXY_PASS } = process.env;
-      console.log(`[PuppeteerLogin] PROXY_HOST detected: ${PROXY_HOST ? PROXY_HOST : 'Not Set'}`);
-      console.log(`[PuppeteerLogin] PROXY_PORT detected: ${PROXY_PORT ? PROXY_PORT : 'Not Set'}`);
-      console.log(`[PuppeteerLogin] PROXY_USER detected: ${PROXY_USER ? 'Set' : 'Not Set'}`); // Avoid logging actual user/pass
-      console.log(`[PuppeteerLogin] PROXY_PASS detected: ${PROXY_PASS ? 'Set' : 'Not Set'}`); // Avoid logging actual user/pass
-      const launchArgs = ['--no-sandbox', '--disable-setuid-sandbox'];
-      let useProxy = PROXY_HOST && PROXY_PORT && PROXY_USER && PROXY_PASS;
+  try {
+    // Section 1: Browser Launch or Acquisition
+    if (!browser || !browser.isConnected()) {
+      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+      console.log('!!! PUPPETEERLOGIN.JS - LAUNCHING NEW BROWSER (FULL_REPLACE_V3_FINAL) !!!!');
+      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+      console.log('[PuppeteerLogin] No existing browser or disconnected. Launching new browser...');
+      newBrowserLaunched = true;
+      const launchArgs = [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage', // Recommended for Docker environments
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        // '--single-process', // Disables sandbox for Linux, use with caution
+        '--disable-gpu'
+      ];
 
       if (useProxy) {
-        console.log('[PuppeteerLogin] Proxy environment variables found. Attempting to use proxy.');
-        const proxyServer = `${PROXY_HOST}:${PROXY_PORT}`;
-        console.log(`[PuppeteerLogin] Setting proxy server argument to: --proxy-server=${proxyServer}`);
+        console.log('[PuppeteerLogin] Proxy environment variables found. Using proxy.');
+        const proxyServer = `${process.env.PROXY_HOST}:${process.env.PROXY_PORT}`;
         launchArgs.push(`--proxy-server=${proxyServer}`);
       } else {
-        console.log('[PuppeteerLogin] Proxy environment variables not fully set or not found. Attempting direct connection.');
+        console.log('[PuppeteerLogin] No proxy variables. Direct connection.');
       }
 
-      console.log('[PuppeteerLogin] Preparing to launch Puppeteer browser with args:', launchArgs);
-    try {
+      const chromeExecutablePathForPuppeteer = '/usr/bin/google-chrome-stable';
+      const chromeExecutablePathForSpawn = '/opt/google/chrome/chrome';
+      const effectiveHeadless = options.headless !== undefined ? options.headless : (process.env.HEADLESS !== 'false');
+
+      console.log(`[PuppeteerLogin Diagnostics] Testing Chrome with spawnSync: ${chromeExecutablePathForSpawn} --version`);
+      try {
+        const chromeVersion = spawnSync(chromeExecutablePathForSpawn, ['--version']);
+        console.log(`[PuppeteerLogin Diagnostics] spawnSync status: ${chromeVersion.status}`);
+        if (chromeVersion.stdout) console.log(`[PuppeteerLogin Diagnostics] spawnSync stdout: ${chromeVersion.stdout.toString().trim()}`);
+        if (chromeVersion.stderr) console.log(`[PuppeteerLogin Diagnostics] spawnSync stderr: ${chromeVersion.stderr.toString().trim()}`);
+        if (chromeVersion.error) console.error(`[PuppeteerLogin Diagnostics] spawnSync error: ${JSON.stringify(chromeVersion.error)}`);
+      } catch (e) {
+        console.error(`[PuppeteerLogin Diagnostics] CATCH during spawnSync: ${e.message}`);
+      }
+
+      console.log(`[PuppeteerLogin] Launching Puppeteer: ${chromeExecutablePathForPuppeteer}, headless: ${effectiveHeadless}, args: ${JSON.stringify(launchArgs)}`);
       browser = await puppeteer.launch({
-        headless: options.headless !== undefined ? options.headless : (process.env.HEADLESS === 'false' ? false : true),
+        executablePath: chromeExecutablePathForPuppeteer,
+        headless: effectiveHeadless,
         args: launchArgs,
-        dumpio: true
+        dumpio: true // Log browser process stdout/stderr
       });
-      console.log('[PuppeteerLogin] Puppeteer browser launched successfully.');
-    } catch (launchError) {
-      console.error('[PuppeteerLogin] CRITICAL: Error during puppeteer.launch():', launchError);
-      throw launchError;
-    }
-
-    console.log('[PuppeteerLogin] Creating new page...');
-    page = await browser.newPage();
-    setBrowserPage(browser, page); // Set global instances now that we have a page
-    console.log('[PuppeteerLogin] New page created.');
-
-      if (useProxy) {
-        console.log('[PuppeteerLogin] Authenticating proxy...');
-        try {
-          await page.authenticate({ username: PROXY_USER, password: PROXY_PASS });
-          console.log('[PuppeteerLogin] Proxy authentication successful (or no error thrown if auth not strictly needed by proxy).');
-        } catch (authError) {
-          console.error('[PuppeteerLogin] CRITICAL: Error during page.authenticate():', authError);
-          // Decide if we should throw or just warn, depending on proxy type
-          // For now, let's throw to see if this is the failure point
-          throw authError;
-        }
-      }
+      console.log('[PuppeteerLogin] Puppeteer browser launched.');
+      setBrowserPage(browser, null); // Set global browser, page will be created next
     } else {
       console.log('[PuppeteerLogin] Using existing browser instance.');
-      // 'browser' variable already holds options.existingBrowser
-      let { page: globalPage, browser: globalBrowser } = getBrowserPage();
-      
-      if (browser === globalBrowser && globalPage && !globalPage.isClosed()) {
-        page = globalPage;
-        console.log('[PuppeteerLogin] Using globally managed page for the existing browser.');
-      } else {
-        if (browser !== globalBrowser) {
-          console.warn('[PuppeteerLogin] Provided existing browser instance is different from globally managed one, or no global page. Will create a new page.');
-        }
-        // Fall through to create a new page if no valid global page or if browsers mismatch significantly
-      }
-      if (!page || page.isClosed()) {
-        console.warn('[PuppeteerLogin] Page is missing, closed, or not suitable. Creating new page for the existing browser.');
-        page = await browser.newPage();
-        setBrowserPage(browser, page); // Manage this new page with the provided/existing browser
-        console.log('[PuppeteerLogin] New page created and set for existing browser.');
+      const { browser: globalBrowser } = getBrowserPage();
+      if (browser !== globalBrowser) {
+        console.warn('[PuppeteerLogin] Existing browser is different from global. Updating global browser instance.');
+        setBrowserPage(browser, null); // Page will be handled next
       }
     }
 
+    // Section 2: Page Acquisition and Setup
+    let { page: globalPage } = getBrowserPage();
+    if (globalPage && !globalPage.isClosed()) {
+      page = globalPage;
+      console.log('[PuppeteerLogin] Using existing global page.');
+    } else {
+      console.log('[PuppeteerLogin] No existing global page or page is closed. Creating new page.');
+      page = await browser.newPage();
+      setBrowserPage(browser, page); // Update global state with new page
+      console.log('[PuppeteerLogin] New page created and set globally.');
+    }
+
+    await page.setViewport({ width: 1280, height: 800 });
+    if (useProxy) {
+      console.log('[PuppeteerLogin] Authenticating proxy for page...');
+      await page.authenticate({ username: process.env.PROXY_USER, password: process.env.PROXY_PASS });
+      console.log('[PuppeteerLogin] Proxy authentication for page successful.');
+    }
+
+    // Section 3: Navigation and Login Logic
     console.log('[PuppeteerLogin] Navigating to OnlyFans main page...');
-    await page.goto('https://onlyfans.com/', { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto('https://onlyfans.com/', { waitUntil: 'networkidle0', timeout: 60000 });
 
     const emailSelector = 'input[name="email"]';
     const passwordSelector = 'input[name="password"]';
     const loginButtonSelector = 'button[type="submit"]';
 
     console.log('[PuppeteerLogin] Entering credentials...');
-    await page.waitForSelector(emailSelector, { timeout: 10000 });
-    await page.type(emailSelector, OF_EMAIL, { delay: 50 });
+    await page.waitForSelector(emailSelector, { timeout: 15000 });
+    await page.type(emailSelector, OF_EMAIL, { delay: 100 });
     await page.waitForSelector(passwordSelector, { timeout: 10000 });
-    await page.type(passwordSelector, OF_PASSWORD, { delay: 50 });
+    await page.type(passwordSelector, OF_PASSWORD, { delay: 100 });
 
-    console.log('[PuppeteerLogin] Attempting to click login button...');
+    console.log('[PuppeteerLogin] Clicking login button...');
     await page.click(loginButtonSelector);
 
-    console.log('[PuppeteerLogin] Waiting for potential page transition after login click...');
+    console.log('[PuppeteerLogin] Waiting for navigation/CAPTCHA after login click (max 30s)...');
     try {
-        await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 15000 });
-        console.log('[PuppeteerLogin] Initial page transition completed or timed out.');
+        await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 30000 });
+        console.log('[PuppeteerLogin] Navigation after login click completed.');
     } catch (e) {
-        console.warn(`[PuppeteerLogin] Initial waitForNavigation after login click failed or timed out: ${e.message}. This might be expected if page reloads quickly or CAPTCHA appears without full navigation.`);
+        console.warn(`[PuppeteerLogin] waitForNavigation after login click timed out or failed: ${e.message}. Checking for CAPTCHA or login status.`);
     }
+    
+    await new Promise(resolve => setTimeout(resolve, 5000)); 
 
-    console.log('[PuppeteerLogin] Adding a 20-second delay for page to settle and CAPTCHA to appear...');
-    await new Promise(resolve => setTimeout(resolve, 20000));
-
-    let captchaProcessed = false;
-    try {
-        console.log('[PuppeteerLogin] Attempting to detect and solve CAPTCHA if present...');
-        console.log('[PuppeteerLogin] Explicitly waiting for reCAPTCHA Enterprise anchor iframe...');
-        const captchaIframeSelector = 'iframe[src*="recaptcha.net/recaptcha/enterprise/anchor"]';
-        await page.waitForSelector(captchaIframeSelector, { visible: true, timeout: 20000 });
-        console.log('[PuppeteerLogin] reCAPTCHA Enterprise anchor iframe found.');
-
-        const iframeHandle = await page.$(captchaIframeSelector);
-        if (!iframeHandle) {
-            console.warn('[PuppeteerLogin] Could not get a handle to the reCAPTCHA iframe.');
-        } else {
-            const frame = await iframeHandle.contentFrame();
-            if (!frame) {
-                console.warn('[PuppeteerLogin] Could not get contentFrame from reCAPTCHA iframe handle.');
-            } else {
-                console.log('[PuppeteerLogin] Waiting for reCAPTCHA anchor element (checkbox) within the iframe...');
-                await frame.waitForSelector('span#recaptcha-anchor', { visible: true, timeout: 15000 });
-                console.log('[PuppeteerLogin] reCAPTCHA anchor element (checkbox) found within iframe.');
-            }
-        }
-        
-        console.log('[PuppeteerLogin] Proceeding to page.solveRecaptchas()...');
-        const solveResult = await page.solveRecaptchas();
-        console.log('[PuppeteerLogin] page.solveRecaptchas() completed. Details:', JSON.stringify(solveResult));
-        if (solveResult && solveResult.error) {
-            console.error('[PuppeteerLogin] Error reported by page.solveRecaptchas():', solveResult.error);
-        }
-        if (solveResult && (solveResult.captchas.length > 0 || solveResult.solved.length > 0 || solveResult.solutions.length > 0)) {
-            console.log('[PuppeteerLogin] CAPTCHA was detected or attempted by the plugin.');
-            captchaProcessed = true;
-        } else {
-            console.log('[PuppeteerLogin] No CAPTCHAs were actively processed by the plugin.');
-        }
-
-    } catch (captchaError) {
-        console.warn(`[PuppeteerLogin] Error during CAPTCHA detection/solving phase: ${captchaError.message}. This could be due to CAPTCHA not being present or other critical issues.`);
-    }
-
-    if (captchaProcessed) {
-        console.log('[PuppeteerLogin] CAPTCHA was processed. Waiting for navigation after CAPTCHA solving attempt...');
+    // Section 4: CAPTCHA Handling (if necessary)
+    console.log('[PuppeteerLogin] Attempting to detect and solve CAPTCHA if present...');
         try {
-            await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 90000 });
-            console.log('[PuppeteerLogin] Navigation after CAPTCHA solving attempt completed.');
-        } catch (e) {
-            console.warn(`[PuppeteerLogin] waitForNavigation after CAPTCHA solving attempt failed or timed out: ${e.message}. Proceeding to check for success element.`);
+            const captchaCheckScreenshotPath = '/tmp/captcha_check_screenshot.png';
+            await page.screenshot({ path: captchaCheckScreenshotPath, fullPage: true });
+            console.log(`[PuppeteerLogin] Screenshot taken before CAPTCHA solving attempts: ${captchaCheckScreenshotPath}`);
+        } catch (ssError) {
+            console.error(`[PuppeteerLogin] Failed to take screenshot before CAPTCHA check: ${ssError.message}`);
         }
-    } else {
-        console.log('[PuppeteerLogin] No CAPTCHA was processed, or an error occurred. Proceeding to check login status directly.');
-        console.log('[PuppeteerLogin] Adding a brief 3-second delay before final login check as no CAPTCHA was actively processed.');
-        await new Promise(resolve => setTimeout(resolve, 3000));
-    }
+    let captchaSolvedOrNotPresent = false;
+    const maxCaptchaRetries = 3;
+    const captchaRetryDelay = 7000; // 7 seconds
 
-    console.log(`[PuppeteerLogin] Current URL before final login check: ${page.url()}`);
-    await page.waitForSelector(HOME_ELEMENT_SELECTOR, { visible: true, timeout: 90000 });
-    console.log('[PuppeteerLogin] Successfully logged in: "Home" element is visible.');
-    return { browser, page, success: true, error: null };
-
-  } catch (error) {
-    console.error('[PuppeteerLogin] Error during OnlyFans login flow:', error.message);
-    if (page && !page.isClosed()) {
+    for (let attempt = 1; attempt <= maxCaptchaRetries && !captchaSolvedOrNotPresent; attempt++) {
       try {
-        const screenshotPath = `error_screenshot_${Date.now()}.png`;
-        await page.screenshot({ path: screenshotPath, fullPage: true });
-        console.log(`[PuppeteerLogin] Screenshot taken on error: ${screenshotPath}`);
-      } catch (screenshotError) {
-        console.error('[PuppeteerLogin] Error taking screenshot:', screenshotError);
+        if (attempt > 1) {
+            console.log(`[PuppeteerLogin] Retrying CAPTCHA, attempt ${attempt}/${maxCaptchaRetries}...`);
+            await new Promise(resolve => setTimeout(resolve, captchaRetryDelay));
+        } else {
+            console.log(`[PuppeteerLogin] CAPTCHA attempt ${attempt}/${maxCaptchaRetries}...`);
+        }
+
+        const solveResult = await page.solveRecaptchas();
+        console.log(`[PuppeteerLogin] page.solveRecaptchas() result (attempt ${attempt}):`, JSON.stringify(solveResult));
+
+        if (solveResult && solveResult.error) {
+          console.error(`[PuppeteerLogin] Error from solveRecaptchas (attempt ${attempt}):`, solveResult.error);
+          lastCaptchaError = solveResult.error;
+          // Enhanced error logging
+          console.error(`[PuppeteerLogin] Error caught during CAPTCHA phase (attempt ${attempt}). Raw error object:`, JSON.stringify(lastCaptchaError, Object.getOwnPropertyNames(lastCaptchaError)));
+            
+          let specificErrorMessage = "Unknown CAPTCHA error";
+          if (lastCaptchaError && typeof lastCaptchaError === 'object') {
+              if (lastCaptchaError.message && typeof lastCaptchaError.message === 'string' && lastCaptchaError.message.toLowerCase().includes('2captcha error:')) {
+                  specificErrorMessage = lastCaptchaError.message;
+              } else if (lastCaptchaError.error && typeof lastCaptchaError.error === 'string' && lastCaptchaError.error.toLowerCase().includes('2captcha error:')) {
+                  specificErrorMessage = lastCaptchaError.error; // Matches structure logged by plugin
+              } else if (lastCaptchaError.solutions && Array.isArray(lastCaptchaError.solutions) && lastCaptchaError.solutions.length > 0 && lastCaptchaError.solutions[0].error) {
+                  specificErrorMessage = String(lastCaptchaError.solutions[0].error); // From solveRecaptchas result structure
+              } else if (lastCaptchaError.message) {
+                  specificErrorMessage = lastCaptchaError.message;
+              } else {
+                  specificErrorMessage = JSON.stringify(lastCaptchaError);
+              }
+          } else if (lastCaptchaError) {
+              specificErrorMessage = String(lastCaptchaError);
+          }
+            
+          console.error(`[PuppeteerLogin] Parsed CAPTCHA error (attempt ${attempt}): ${specificErrorMessage}`);
+          console.error(`[PuppeteerLogin] Stack: ${lastCaptchaError.stack || 'No stack available'}`);
+
+          const lowerSpecificErrorMessage = specificErrorMessage.toLowerCase();
+
+          // Check for retryable errors (expanded list based on common 2Captcha issues)
+          if (lowerSpecificErrorMessage.includes('error_captcha_unsolvable') ||
+              lowerSpecificErrorMessage.includes('error_wrong_sitekey') || // Added
+              lowerSpecificErrorMessage.includes('error_wrong_googlekey') || // Added
+              lowerSpecificErrorMessage.includes('error_zero_balance') || // Added
+              lowerSpecificErrorMessage.includes('api key not found') || // Added
+              lowerSpecificErrorMessage.includes('invalid_credentials') || // Added
+              lowerSpecificErrorMessage.includes('500 internal server error') ||
+              lowerSpecificErrorMessage.includes('networkerror') ||
+              (lowerSpecificErrorMessage.includes('timeout') && !lowerSpecificErrorMessage.includes('navigation timeout'))
+          ) { 
+              console.log('[PuppeteerLogin] Retryable 2Captcha service error detected, will retry.');
+              continue; 
+          } else {
+              console.error('[PuppeteerLogin] Max retries reached for 2Captcha service error.');
+              break; 
+            console.warn('[PuppeteerLogin] Non-retryable error reported by solveRecaptchas plugin. CAPTCHA solving failed.');
+            break; 
+          }
+        }
+
+        if (solveResult && solveResult.solved && solveResult.solved.length > 0) {
+          console.log('[PuppeteerLogin] CAPTCHA successfully solved.');
+          captchaSolvedOrNotPresent = true;
+          console.log('[PuppeteerLogin] Waiting for potential navigation after CAPTCHA (max 20s)...');
+          await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 20000 })
+            .catch(e => console.warn(`[PuppeteerLogin] Navigation after CAPTCHA solve timed out/failed: ${e.message}`));
+        } 
+        else if (solveResult && solveResult.captchas && solveResult.captchas.length === 0) {
+          console.log('[PuppeteerLogin] No CAPTCHA detected by solveRecaptchas.');
+          captchaSolvedOrNotPresent = true;
+        } 
+        else if (solveResult && solveResult.captchas && solveResult.captchas.length > 0 && (!solveResult.solved || solveResult.solved.length === 0)) {
+          console.warn(`[PuppeteerLogin] CAPTCHA detected but not solved (attempt ${attempt}). Result:`, JSON.stringify(solveResult));
+          if (attempt < maxCaptchaRetries) {
+            console.log('[PuppeteerLogin] Will retry solving detected CAPTCHA.');
+            continue;
+          } else {
+            console.error('[PuppeteerLogin] Max retries reached; CAPTCHA detected but not solved.');
+            break;
+          }
+        } 
+        else {
+            console.log(`[PuppeteerLogin] solveRecaptchas result in unexpected state or implies no action taken (attempt ${attempt}).`);
+            captchaSolvedOrNotPresent = true; // Assuming no further action needed for this state.
+        }
+
+      } catch (captchaError) {
+        console.warn(`[PuppeteerLogin] Error caught during CAPTCHA phase (attempt ${attempt}): ${captchaError.message}`);
+        if(captchaError.stack) console.warn(`[PuppeteerLogin] Stack: ${captchaError.stack}`);
+        if (attempt < maxCaptchaRetries) {
+          console.log('[PuppeteerLogin] Will retry due to caught error.');
+        } else {
+          console.error('[PuppeteerLogin] Max retries reached after caught error during CAPTCHA phase.');
+          break;
+        }
       }
+    } 
+
+    if (!captchaSolvedOrNotPresent) {
+        console.warn('[PuppeteerLogin] CAPTCHA was not successfully handled after all attempts. Login may fail if one was present.');
     }
-    if (!options.existingBrowser && browser) {
-      await browser.close();
-      browser = null; 
+
+    // Section 5: Login Verification
+    console.log('[PuppeteerLogin] Verifying login status...');
+    const loggedIn = await checkLoginStatus(page);
+
+    if (loggedIn) {
+      console.log('[PuppeteerLogin] Login successful!');
+      return { browser, page, success: true, error: null };
+    } else {
+      console.error('[PuppeteerLogin] Login failed: Verification check failed.');
+      // Ensure this path is writable in your Docker container
+      await page.screenshot({ path: '/tmp/login_failed_screenshot.png' }).catch(e => console.warn('Failed to take screenshot on login failure:', e.message));
+      throw new Error('Login verification failed after all steps.');
     }
+
+  } catch (error) { // MAIN CATCH BLOCK
+    console.error(`[PuppeteerLogin] CRITICAL ERROR in loginOnlyFans: ${error.message}`);
+    console.error(`[PuppeteerLogin] Stack: ${error.stack}`);
     if (page && !page.isClosed()) {
-        try { await page.close(); } catch (e) { /* ignore page close error */ }
+        try {
+            const errorScreenshotPath = '/tmp/critical_error_screenshot.png'; // Ensure this path is writable
+            await page.screenshot({ path: errorScreenshotPath });
+            console.log(`[PuppeteerLogin] Screenshot taken on error: ${errorScreenshotPath}`);
+        } catch (screenshotError) {
+            console.warn('[PuppeteerLogin] Failed to take screenshot on critical error:', screenshotError.message);
+        }
     }
-    return { browser, page: null, success: false, error: error.message };
+    if (newBrowserLaunched && browser && browser.isConnected()) {
+      console.log('[PuppeteerLogin] Closing browser instance (launched by this function) due to error...');
+      await browser.close().catch(closeError => console.warn('[PuppeteerLogin] Error closing browser:', closeError.message));
+    }
+    setBrowserPage(null, null); // Clear global state on any error path
+    return { browser: null, page: null, success: false, error: error.message || 'An unspecified critical error occurred.' };
   }
 }
 

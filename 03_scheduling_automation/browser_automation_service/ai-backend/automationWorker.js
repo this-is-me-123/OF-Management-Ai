@@ -1,4 +1,4 @@
-require('dotenv').config();
+// require('dotenv').config();
 
 // Diagnostic: Attempt to require puppeteer-core directly
 try {
@@ -10,7 +10,7 @@ try {
   process.exit(1); // Exit if this basic require fails
 }
 
-require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+// require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const { getSupabaseClient } = require('./supabase_integration');
 
 const supabase = getSupabaseClient();

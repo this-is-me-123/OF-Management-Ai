@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libcairo2 \
     libcups2 \
     libdbus-1-3 \
+    dbus \
     libexpat1 \
     libfontconfig1 \
     libgcc1 \
@@ -48,15 +49,32 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package.json and package-lock.json (or npm-shrinkwrap.json) to the working directory
-COPY package*.json ./
+# Install Google Chrome
+# Ensure dependencies for adding repo are present
+RUN apt-get update && apt-get install -y wget gnupg ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+
 
 # Install project dependencies
 # Using --system-libs to prevent Puppeteer from downloading its own Chromium, 
 # as we are providing it via apt-get. This might not always be necessary or the best approach
 # depending on the exact Puppeteer version and base image. 
-# For now, let's try a standard install and let Puppeteer download its version.
-RUN npm install
+# Copy package.json and package-lock.json (or npm-shrinkwrap.json) to the working directory
+# This was moved up from original position to ensure it's before npm install
+COPY package*.json ./
+
+# Install project dependencies
+RUN npm cache clean --force
+RUN npm install --verbose
 
 # If you are using a private npm registry, you might need to copy .npmrc here
 # COPY .npmrc ./
