@@ -193,7 +193,7 @@ async function main() {
 
     const puppeteerLaunchOpts = {
         headless: process.env.HEADLESS !== 'false',
-        ...(Object.keys(proxyOptions).length > 0 && { proxy: proxyOptions }) // Add proxy to options if configured
+        // ...(Object.keys(proxyOptions).length > 0 && { proxy: proxyOptions }) // Add proxy to options if configured
     };
 
     console.log('Initializing Puppeteer and logging into OnlyFans...');

@@ -64,5 +64,7 @@
     #   - SYS_ADMIN
     # Or, modify the Puppeteer launch arguments in your code:
     # args: ['--no-sandbox', '--disable-setuid-sandbox']
-    command: node automationWorker.js
+    environment:
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+    command: sh -c "xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' node automationWorker.js"
     restart: always
