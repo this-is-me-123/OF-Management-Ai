@@ -24,7 +24,7 @@ async function takeScreenshot(pageInstance, label, baseDir = '/tmp') {
 }
 
 // Apply StealthPlugin
-puppeteer.use(StealthPlugin());
+// puppeteer.use(StealthPlugin());
 
 // Apply RecaptchaPlugin (will use TWOCAPTCHA_API_KEY from env)
 puppeteer.use(
@@ -149,9 +149,14 @@ async function loginOnlyFans(username, password, options = {}) {
             _pageInstance = await _browserInstance.newPage();
             setBrowserPage(_browserInstance, _pageInstance);
             console.log('[PuppeteerLogin] New page created and set globally via setBrowserPage.');
-            console.log('[PuppeteerLogin] Request interception enabled.');
+            // console.log('[PuppeteerLogin] Request interception enabled.'); // This was misleading as setRequestInterception(true) is not called.
 
+            /* Request interception is currently NOT active because await _pageInstance.setRequestInterception(true) is not called.
+               The following handler would only become active if setRequestInterception(true) is added back.
             _pageInstance.on('request', async req => { // Make the handler async
+                const earlyUrl = req.url(); // Get URL at the very start
+                console.log(`[PuppeteerLogin] INTERCEPT_HANDLER_ENTRY: URL: ${earlyUrl}, ResourceType: ${req.resourceType()}`);
+
                 if (req.isInterceptResolutionHandled()) {
                     // console.log(`[PuppeteerLogin] INTERCEPT: Request already handled or being handled: ${req.url()}`);
                     return;
@@ -166,32 +171,31 @@ async function loginOnlyFans(username, password, options = {}) {
                 const analyticsDomainsToBlock = ['google-analytics.com', 'google.com/ccm/collect', 'facebook.net/tr', 'tiktok.com/api/v2/event', 'ads-twitter.com', 'bat.bing.com'];
                 const isAnalyticsUrlToBlock = analyticsDomainsToBlock.some(domain => url.includes(domain));
                 
-                // More comprehensive list of resource types that can often be blocked for performance
-                // Ensure 'onlyfans.com' resources are not blocked by type if they are essential (e.g. xhr, script, document)
                 const generallyBlockedResourceTypes = new Set(['image', 'stylesheet', 'font', 'media', 'other', 'manifest', 'preflight']);
 
                 try {
                     if (isCaptchaUrl) {
-                        // console.log(`[PuppeteerLogin] INTERCEPT: Allowing CAPTCHA request: ${url}`);
-                        await req.continue();
+                        console.log(`[PuppeteerLogin] INTERCEPT: CAPTCHA domain detected for URL: ${url}. ResourceType: ${resourceType}. Attempting to continue.`);
+                        try {
+                            await req.continue();
+                            console.log(`[PuppeteerLogin] INTERCEPT: Successfully continued CAPTCHA request: ${url}`);
+                        } catch (continueError) {
+                            console.error(`[PuppeteerLogin] INTERCEPT: CRITICAL - Error calling req.continue() for CAPTCHA URL ${url}: ${continueError.message}`);
+                        }
                     } else if (isAnalyticsUrlToBlock) {
-                        // console.log(`[PuppeteerLogin] INTERCEPT: Aborting analytics request: ${url}`);
                         await req.abort('blockedbyclient');
                     } else if (generallyBlockedResourceTypes.has(resourceType) && !url.includes('onlyfans.com')) {
-                        // Block general resource types if they are not from onlyfans.com
-                        // console.log(`[PuppeteerLogin] INTERCEPT: Aborting resource type '${resourceType}': ${url}`);
                         await req.abort('blockedbyclient');
                     } else {
-                        // console.log(`[PuppeteerLogin] INTERCEPT: Allowing other request (Type: ${resourceType}): ${url}`);
                         await req.continue();
                     }
                 } catch (e) {
-                    // Avoid logging common "already handled" errors if they somehow slip through the initial check
                     if (e.message && !e.message.toLowerCase().includes('request is already handled') && !e.message.toLowerCase().includes('request context is destroyed')) {
                         console.warn(`[PuppeteerLogin] INTERCEPT: Error handling request ${url}: ${e.message}`);
                     }
                 }
             });
+            */
         } else {
             console.log('[PuppeteerLogin] Using existing page instance.');
         }
