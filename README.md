@@ -26,6 +26,6 @@ This repository organizes automation scripts and planning resources for managing
 3. Run tests from the repository root:
    ```bash
    pytest
-   npm test
+   node tests/unit/test_price_calculation.js
    ```
 
