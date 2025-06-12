@@ -1,8 +1,8 @@
 // backend/test-apply-schema.js
 import { exec } from 'child_process';
 
-// Run apply-schema.js
-exec('node apply-schema.js', (err, stdout, stderr) => {
+// Run apply-schema.js from this backend directory
+exec('node backend/apply-schema.js', (err, stdout, stderr) => {
   if (err) {
     console.error('Script failed:', stderr);
     process.exit(1);

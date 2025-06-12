@@ -1,0 +1,7 @@
+{
+  "name": "of-management-ai",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node tests/unit/test_price_calculation.js"
+  }
+}
