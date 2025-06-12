@@ -1,0 +1,10 @@
+{
+  "name": "ai-chat-persona",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "mocha tests/persona_style.test.js"
+  },
+  "devDependencies": {
+    "mocha": "^10.4.0"
+  }
+}
