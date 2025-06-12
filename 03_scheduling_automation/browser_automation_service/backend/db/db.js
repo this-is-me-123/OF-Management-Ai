@@ -14,6 +14,7 @@ const defaultDbFile = process.env.DB_FILE
 
 let SQL;       // SQL.js module
 let dbInstance;
+let currentDbFile = defaultDbFile;
 
 /**
  * Initialize and return the SQL.js Database in WASM.
@@ -24,7 +25,8 @@ let dbInstance;
 export async function createDbConnection(customPath) {
   const dbFile = customPath || defaultDbFile;
   if (!SQL) {
-    SQL = await initSqlJs({ locateFile: file => `./node_modules/sql.js/dist/${file}` });
+    const locate = file => path.join(__dirname, '../node_modules/sql.js/dist', file);
+    SQL = await initSqlJs({ locateFile: locate });
   }
 
   let filebuffer = new Uint8Array();
@@ -33,6 +35,7 @@ export async function createDbConnection(customPath) {
   }
 
   dbInstance = new SQL.Database(filebuffer);
+  currentDbFile = dbFile;
   return dbInstance;
 }
 
@@ -43,7 +46,7 @@ export async function createDbConnection(customPath) {
 export function saveDb(customPath) {
   if (!dbInstance) return;
   const data = dbInstance.export();
-  const outFile = customPath || defaultDbFile;
+  const outFile = customPath || currentDbFile;
   fs.writeFileSync(outFile, Buffer.from(data));
 }
 
