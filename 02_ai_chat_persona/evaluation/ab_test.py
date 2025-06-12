@@ -14,6 +14,10 @@ def generate_pairs(baseline_path: str, candidate_path: str, out_path: str) -> No
     """Create a JSON file with paired baseline and candidate completions."""
     baseline = load_jsonl(baseline_path)
     candidate = load_jsonl(candidate_path)
+
+    if len(baseline) != len(candidate):
+        raise ValueError("Baseline and candidate sets must have equal length")
+
     pairs = []
     for b, c in zip(baseline, candidate):
         pairs.append({
@@ -25,7 +29,8 @@ def generate_pairs(baseline_path: str, candidate_path: str, out_path: str) -> No
         json.dump(pairs, f, indent=2)
 
 
-def average(values: List[int]) -> float:
+def average(values: List[float]) -> float:
+    """Return the arithmetic mean of a list of numbers."""
     return sum(values) / len(values) if values else 0.0
 
 
@@ -38,16 +43,21 @@ def evaluate_ratings(ratings_path: str) -> Tuple[float, float]:
     return average(cand_scores), average(base_scores)
 
 
+def _rate(part: int, total: int) -> float:
+    """Safe division returning zero when total is zero."""
+    return part / total if total else 0.0
+
+
 def evaluate_engagement(metrics_path: str) -> Tuple[float, float]:
     """Compute engagement deltas from a metrics JSON file."""
     with open(metrics_path) as f:
         data = json.load(f)
     base = data["baseline"]
     cand = data["candidate"]
-    base_ctr = base["clicks"] / base["impressions"]
-    cand_ctr = cand["clicks"] / cand["impressions"]
-    base_reply = base["replies"] / base["impressions"]
-    cand_reply = cand["replies"] / cand["impressions"]
+    base_ctr = _rate(base["clicks"], base["impressions"])
+    cand_ctr = _rate(cand["clicks"], cand["impressions"])
+    base_reply = _rate(base["replies"], base["impressions"])
+    cand_reply = _rate(cand["replies"], cand["impressions"])
     return cand_ctr - base_ctr, cand_reply - base_reply
 
 
