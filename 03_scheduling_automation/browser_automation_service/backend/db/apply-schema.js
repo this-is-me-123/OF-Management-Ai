@@ -1,24 +1,31 @@
 import fs from 'fs';
 import path from 'path';
-import Database from 'better-sqlite3';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  createDbConnection,
+  runAsync,
+  allAsync,
+  getAsync,
+  closeDbConnection
+} from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = '/app/logs.db'; // Path inside the Docker container
+const dbPath = path.join(__dirname, '..', 'logs.db');
 const migrationsDir = path.join(__dirname, 'migrations');
 
 async function applyMigrations() {
   let db;
   try {
-    db = new Database(dbPath);
+    // Use SQL.js for portability
+    db = await createDbConnection(dbPath);
     console.log('Connected to the database.');
 
     // 1. Ensure schema_migrations table exists
-    db.exec(`
+    runAsync(`
       CREATE TABLE IF NOT EXISTS schema_migrations (
         filename TEXT PRIMARY KEY,
         applied_at TEXT NOT NULL
@@ -27,7 +34,7 @@ async function applyMigrations() {
     console.log('Checked/created schema_migrations table.');
 
     // 2. Get already applied migrations
-    const appliedMigrationsRows = db.prepare('SELECT filename FROM schema_migrations').all();
+    const appliedMigrationsRows = allAsync('SELECT filename FROM schema_migrations');
     const appliedMigrations = new Set(appliedMigrationsRows.map(row => row.filename));
     console.log('Applied migrations:', Array.from(appliedMigrations));
 
@@ -48,12 +55,11 @@ async function applyMigrations() {
       console.log(`Applying migration ${file}...`);
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
       
-      // Execute the whole SQL file. better-sqlite3's exec handles multiple statements.
-      db.exec(sql);
+      // Execute the entire SQL file with sql.js
+      runAsync(sql);
       
       // Record migration as applied
-      const stmt = db.prepare('INSERT INTO schema_migrations (filename, applied_at) VALUES (?, ?)');
-      stmt.run(file, new Date().toISOString());
+      runAsync('INSERT INTO schema_migrations (filename, applied_at) VALUES (?, ?)', [file, new Date().toISOString()]);
       console.log(`Migration ${file} applied successfully and recorded.`);
     }
 
@@ -61,7 +67,7 @@ async function applyMigrations() {
     console.log('Checking for default test user (test@example.com)...');
     const testUserEmail = 'test@example.com';
     const testUserPassword = 'password123';
-    let existingTestUser = db.prepare('SELECT id FROM users WHERE email = ?').get(testUserEmail);
+    let existingTestUser = getAsync('SELECT id FROM users WHERE email = ?', [testUserEmail]);
 
     if (!existingTestUser) {
       console.log(`Default test user ${testUserEmail} not found. Creating...`);
@@ -69,9 +75,10 @@ async function applyMigrations() {
       const passwordHash = await bcrypt.hash(testUserPassword, saltRounds);
       const userId = uuidv4();
       const now = new Date().toISOString();
-      db.prepare(
-        'INSERT INTO users (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)'
-      ).run(userId, testUserEmail, passwordHash, now);
+      runAsync(
+        'INSERT INTO users (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)',
+        [userId, testUserEmail, passwordHash, now]
+      );
       console.log(`Default test user ${testUserEmail} created successfully.`);
     } else {
       console.log(`Default test user ${testUserEmail} already exists.`);
@@ -85,7 +92,7 @@ async function applyMigrations() {
     process.exit(1); // Exit with error code if migrations fail
   } finally {
     if (db) {
-      db.close();
+      closeDbConnection();
       console.log('Database connection closed.');
     }
   }
