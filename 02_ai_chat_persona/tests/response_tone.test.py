@@ -1,6 +1,10 @@
 # response_tone.test.py
 
 import unittest
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from aiClient import generate_response
 
 class TestResponseTone(unittest.TestCase):
