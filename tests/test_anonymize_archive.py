@@ -1,0 +1,22 @@
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / '02_ai_chat_persona' / 'training_scripts'))
+
+from anonymize_archive import scrub, main
+
+def test_scrub_replaces_handle_and_phone():
+    text = "Hey @john call me at 555-123-4567"
+    result = scrub(text)
+    assert "@" not in result
+    assert "555" not in result
+
+
+def test_main_writes_file(tmp_path):
+    csv_path = tmp_path / "in.csv"
+    with open(csv_path, "w") as f:
+        f.write("inbound,response\nHi John,hello\n")
+    out_json = tmp_path / "out.json"
+    main(str(csv_path), str(out_json))
+    assert out_json.exists()
