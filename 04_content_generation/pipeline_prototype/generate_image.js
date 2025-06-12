@@ -10,7 +10,7 @@ require('dotenv').config();
 async function generate() {
   const prompt = fs.readFileSync('../prompt_templates/cover_image_prompts.md', 'utf-8').split('\n')[0];
 
-  # Dummy API call structure; replace with actual SDK or HTTP request
+  // Dummy API call structure; replace with actual SDK or HTTP request
   const response = await axios.post(
     'https://api.your-image-engine.com/v1/generate',
     { prompt },
