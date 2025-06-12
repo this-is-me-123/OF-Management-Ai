@@ -1,0 +1,24 @@
+# Node modules
+node_modules/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build directories
+/dist/
+/tmp/
+
+# SQLite databases
+*.sqlite
+
