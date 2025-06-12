@@ -30,3 +30,12 @@ This document outlines the major components of the scheduler interface. Detailed
 - Buttons at the bottom allow **Save as Draft** or **Schedule**.
 - A confirmation dialog summarizes the date/time, attached media, and caption before finalizing.
 - Errors from the API are displayed inline with guidance on next steps.
+
+## API Integration Notes
+
+The scheduler UI relies on the endpoints defined in
+[scheduler_api_spec.md](scheduler_api_spec.md) for creating, updating, and
+canceling scheduled posts. Environment variables such as `OF_API_KEY` and
+`HOOTSUITE_TOKEN` (see [`common/env.example`](../../common/env.example)) must be
+available for real posting. When credentials are missing, the UI should disable
+the **Schedule** button and prompt users to contact the API team.
