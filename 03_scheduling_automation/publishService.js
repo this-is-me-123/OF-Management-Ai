@@ -14,10 +14,14 @@ async function publishPost(post) {
   // For now we just log the post and mimic an API call.
   try {
     console.log('Publishing post:', post);
-    if (post.platform === 'hootsuite') {
-      await axios.post(config.hootsuiteEndpoint, post);
+    switch (post.platform) {
+      case 'hootsuite':
+        return await axios.post(config.hootsuiteEndpoint, post);
+      case 'onlyfans':
+        throw new Error('OnlyFans publishing not yet implemented');
+      default:
+        throw new Error(`Unsupported platform: ${post.platform}`);
     }
-    // OnlyFans publishing would go here.
   } catch (err) {
     console.error('Failed to publish post', err.message);
     throw err;
