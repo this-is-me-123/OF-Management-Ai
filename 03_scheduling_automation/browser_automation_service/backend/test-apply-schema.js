@@ -1,8 +1,13 @@
 // backend/test-apply-schema.js
 import { exec } from 'child_process';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
-// Run apply-schema.js from this backend directory
-exec('node backend/apply-schema.js', (err, stdout, stderr) => {
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const script = resolve(__dirname, 'apply-schema.js');
+
+// Run apply-schema.js from this backend directory regardless of CWD
+exec(`node ${script}`, (err, stdout, stderr) => {
   if (err) {
     console.error('Script failed:', stderr);
     process.exit(1);
