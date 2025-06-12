@@ -8,7 +8,7 @@ const { calculatePrice } = require('../../common/utils/pricing');
 
 try {
   const result = calculatePrice(100, 0.2); // 20% discount
-  assert.strictEqual(result, 80);
+  assert.strictEqual(result, 8000); // result returned in cents
   console.log('Price calculation test passed');
 } catch (err) {
   console.error('Price calculation test failed:', err.message);
