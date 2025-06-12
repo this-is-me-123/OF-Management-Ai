@@ -1,4 +1,5 @@
 import sys
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,3 +21,15 @@ def test_main_writes_file(tmp_path):
     out_json = tmp_path / "out.json"
     main(str(csv_path), str(out_json))
     assert out_json.exists()
+
+
+def test_names_file(tmp_path):
+    csv_path = tmp_path / "in.csv"
+    with open(csv_path, "w") as f:
+        f.write("inbound,response\nHi Alice,hello\n")
+    names = tmp_path / "names.txt"
+    names.write_text("Alice\n")
+    out_json = tmp_path / "out.json"
+    main(str(csv_path), str(out_json), str(names))
+    data = json.load(open(out_json))
+    assert "Alice" not in data["messages"][0]["inbound"]
