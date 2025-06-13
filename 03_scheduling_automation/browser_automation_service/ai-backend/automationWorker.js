@@ -153,3 +153,4 @@ process.on('SIGINT', async () => { console.log('Shutting down...'); if (globalBr
 process.on('SIGTERM', async () => { console.log('Shutting down...'); if (globalBrowser) await globalBrowser.close(); process.exit(0); });
 
 main().catch(async e => { console.error('Automation Worker crashed:', e); if (globalBrowser) await globalBrowser.close(); process.exit(1); });
+
