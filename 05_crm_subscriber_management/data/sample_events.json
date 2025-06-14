@@ -1,0 +1,32 @@
+{
+  "events": [
+    {
+      "event": "new",
+      "subscriber": {
+        "id": 1,
+        "name": "Alice",
+        "days_subscribed": 0,
+        "total_spend": 60
+      }
+    },
+    {
+      "event": "inactive",
+      "subscriber": {
+        "id": 2,
+        "name": "Bob",
+        "days_subscribed": 30,
+        "no_activity_days": 15,
+        "total_spend": 10
+      }
+    },
+    {
+      "event": "upgrade",
+      "subscriber": {
+        "id": 1,
+        "name": "Alice",
+        "days_subscribed": 30,
+        "total_spend": 120
+      }
+    }
+  ]
+}
