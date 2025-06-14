@@ -2,7 +2,13 @@ import json
 from pathlib import Path
 import yaml
 import argparse
+import sys
 
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    __package__ = "crm"
+
+from . import db, messaging
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 RULES_FILE = BASE_DIR / "segmentation_rules.json"
@@ -23,11 +29,17 @@ def load_tiers():
 
 
 def parse_condition(value_str, actual):
-    """Evaluate a simple condition like '<7' or '>100'."""
+    """Evaluate a simple condition like '<=7', '>100', or 'VIP'."""
+    if value_str.startswith('<='):
+        return actual <= float(value_str[2:])
+    if value_str.startswith('>='):
+        return actual >= float(value_str[2:])
     if value_str.startswith('<'):
         return actual < float(value_str[1:])
     if value_str.startswith('>'):
         return actual > float(value_str[1:])
+    if value_str and value_str[0] in '!=>':
+        raise ValueError(f"Unsupported operator in condition: {value_str}")
     return str(actual) == str(value_str)
 
 
@@ -79,22 +91,26 @@ def onboard_user(user):
     segment = assign_segment(user, rules)
     if segment != 'New':
         print(f"User {user.get('name')} is not new (segment: {segment}).")
-        return
+        return None
     tier = assign_tier(user, tiers)
     template = load_template(tier)
     message = personalize(template, user)
+    record = user.copy()
+    record.update({'segment': segment, 'tier': tier})
+    db.update(user['id'], record)
     print(f"Sending {tier} welcome message to {user.get('name')}:")
-    print(message)
+    return messaging.send_message(user['name'], message)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Onboard a subscriber")
+    parser.add_argument('--id', type=int, default=1, help='Subscriber ID')
     parser.add_argument('--name', required=True, help='Subscriber name')
     parser.add_argument('--days', type=int, default=0, help='Days subscribed')
     parser.add_argument('--spend', type=float, default=0.0, help='Total spend')
     args = parser.parse_args()
 
-    user = {'name': args.name, 'days_subscribed': args.days, 'total_spend': args.spend}
+    user = {'id': args.id, 'name': args.name, 'days_subscribed': args.days, 'total_spend': args.spend}
     onboard_user(user)
 
 
