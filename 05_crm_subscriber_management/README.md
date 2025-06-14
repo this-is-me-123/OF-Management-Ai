@@ -9,6 +9,10 @@ This module contains message templates and workflows for subscriber tiers.
 ## Getting Started
 1. Edit or add new templates in `message_templates/`.
 2. Integrate these templates into your CRM automation scripts.
+3. Configure the database:
+   - By default `crm/db.py` uses an SQLite file `crm.db`.
+   - Set the `DATABASE_URL` environment variable to connect to Postgres or
+     specify `json` to use a simple JSON file store for quick testing.
 
 ## Example Workflow
 
