@@ -30,4 +30,5 @@ mklink outputs
 import outputs
 
 # Start application
-python launch.py $*
+- python launch.py $*
++ python launch.py "$@"
