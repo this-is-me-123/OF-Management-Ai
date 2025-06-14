@@ -30,11 +30,17 @@ def load_tiers():
 
 
 def parse_condition(value_str, actual):
-    """Evaluate a simple condition like '<7' or '>100'."""
+    """Evaluate a simple condition like '<=7', '>100', or 'VIP'."""
+    if value_str.startswith('<='):
+        return actual <= float(value_str[2:])
+    if value_str.startswith('>='):
+        return actual >= float(value_str[2:])
     if value_str.startswith('<'):
         return actual < float(value_str[1:])
     if value_str.startswith('>'):
         return actual > float(value_str[1:])
+    if value_str and value_str[0] in '!=>':
+        raise ValueError(f"Unsupported operator in condition: {value_str}")
     return str(actual) == str(value_str)
 
 

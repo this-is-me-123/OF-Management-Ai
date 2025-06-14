@@ -15,13 +15,17 @@ import json
 
 class TestCRMWorkflows(unittest.TestCase):
     def test_onboard_and_retention(self):
-        new_user = {'id': 3, 'name': 'Test', 'days_subscribed': 0, 'total_spend': 5}
-        msg1 = onboarding.onboard_user(new_user)
-        self.assertIn('Test', msg1)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db.DB_FILE = Path(tmpdir) / 'db.json'
+            messaging.LOG_FILE = Path(tmpdir) / 'log.txt'
 
-        inactive = {'id': 4, 'name': 'Old', 'days_subscribed': 30, 'no_activity_days': 15, 'total_spend': 5}
-        msg2 = retention.send_retention_offer(inactive)
-        self.assertIn('Old', msg2)
+            new_user = {'id': 3, 'name': 'Test', 'days_subscribed': 0, 'total_spend': 5}
+            msg1 = onboarding.onboard_user(new_user)
+            self.assertIn('Test', msg1)
+
+            inactive = {'id': 4, 'name': 'Old', 'days_subscribed': 30, 'no_activity_days': 15, 'total_spend': 5}
+            msg2 = retention.send_retention_offer(inactive)
+            self.assertIn('Old', msg2)
 
     def test_cli_scripts(self):
         onboarding_path = MODULE_PATH / 'crm' / 'onboarding.py'
@@ -43,6 +47,12 @@ class TestCRMWorkflows(unittest.TestCase):
             data = json.load(open(db.DB_FILE))
             self.assertEqual(data['1']['tier'], 'Ultra')
             self.assertEqual(data['2']['segment'], 'At-Risk')
+
+    def test_parse_condition_inclusive(self):
+        self.assertTrue(onboarding.parse_condition('<=5', 5))
+        self.assertTrue(onboarding.parse_condition('>=5', 5))
+        with self.assertRaises(ValueError):
+            onboarding.parse_condition('!=5', 4)
 
 
 if __name__ == '__main__':
