@@ -18,9 +18,13 @@ EVENTS_FILE = BASE_DIR / 'data' / 'sample_events.json'
 
 def process_events(events_file: Path = EVENTS_FILE):
     """Read subscriber events from ``events_file`` and trigger workflows."""
-    with open(events_file, 'r') as f:
-        events = json.load(f).get('events', [])
-
+    try:
+        with open(events_file, 'r', encoding='utf-8') as f:
+            events = json.load(f).get('events', [])
+    except FileNotFoundError as exc:
+        raise SystemExit(f"[process_events] File not found: {events_file}") from exc
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"[process_events] Invalid JSON in {events_file}: {exc}") from exc
     for event in events:
         user = event['subscriber']
         if event['event'] == 'new':
