@@ -12,6 +12,19 @@ This module contains message templates and workflows for subscriber tiers.
 
 ## Example Workflow
 
-`crm/onboarding.py` is a simple Python script that loads the segmentation rules
-and tier definitions to send a tier-specific welcome message for new
-subscribers. Run it from this folder to see console output.
+Example workflows live under `crm/`:
+
+- `onboarding.py` – loads segmentation rules and tier definitions to send a welcome message.
+- `retention.py` – sends a retention offer to inactive fans.
+- `process_events.py` – reads events from `data/sample_events.json` and triggers the appropriate workflow.
+
+Each script logs messages to `crm_logs.txt` in this module's root. `process_events.py` also accepts a custom events file via `--file <path>`.
+
+### Running Scripts
+
+You can execute the workflows directly, for example:
+
+```bash
+python crm/onboarding.py --name Alice --id 1
+python crm/process_events.py
+```
