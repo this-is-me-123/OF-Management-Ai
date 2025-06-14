@@ -13,7 +13,11 @@ const config = require('./config/scheduler.config');
 async function publishPost(post) {
   // For now we just log the post and mimic an API call.
   try {
-    console.log('Publishing post:', post);
+    console.log(`Publishing post to ${post?.platform}: ${post?.id ?? '<no-id>'}`);
+
+    if (!post || !post.platform) {
+      throw new Error('publishPost: missing required field "platform"');
+    }
     switch (post.platform) {
       case 'hootsuite':
         return await axios.post(config.hootsuiteEndpoint, post);
