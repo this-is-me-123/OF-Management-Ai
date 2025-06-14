@@ -2,22 +2,23 @@
 import json
 from pathlib import Path
 import sys
+import argparse
 
 if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     __package__ = "crm"
 
-from . import db
+from . import db, messaging
 from .onboarding import onboard_user, load_tiers, assign_tier
 from .retention import send_retention_offer
-from .messaging import send_message
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 EVENTS_FILE = BASE_DIR / 'data' / 'sample_events.json'
 
 
-def process_events():
-    with open(EVENTS_FILE, 'r') as f:
+def process_events(events_file: Path = EVENTS_FILE):
+    """Read subscriber events from ``events_file`` and trigger workflows."""
+    with open(events_file, 'r') as f:
         events = json.load(f).get('events', [])
 
     for event in events:
@@ -33,8 +34,17 @@ def process_events():
             record = user.copy()
             record['tier'] = tier
             db.update(user['id'], record)
-            send_message(user['name'], message)
+            messaging.send_message(user['name'], message)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Process event file")
+    parser.add_argument('--file', type=str, default=str(EVENTS_FILE),
+                        help='Path to events JSON')
+    args = parser.parse_args()
+
+    process_events(Path(args.file))
 
 
 if __name__ == '__main__':
-    process_events()
+    main()

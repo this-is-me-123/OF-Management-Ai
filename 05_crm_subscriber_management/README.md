@@ -20,6 +20,7 @@ Example workflows live under `crm/`:
   triggers the appropriate workflow.
 
 Each script logs messages to `crm_logs.txt` in this module's root.
+`process_events.py` also accepts a custom events file via `--file <path>`.
 
 ### Running Scripts
 

@@ -7,8 +7,10 @@ MODULE_PATH = ROOT / '05_crm_subscriber_management'
 if str(MODULE_PATH) not in sys.path:
     sys.path.insert(0, str(MODULE_PATH))
 
-from crm import onboarding, retention
+from crm import onboarding, retention, process_events, db, messaging
 import subprocess
+import tempfile
+import json
 
 
 class TestCRMWorkflows(unittest.TestCase):
@@ -30,6 +32,17 @@ class TestCRMWorkflows(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn('CLI', result.stdout)
+
+    def test_process_events(self):
+        events_file = MODULE_PATH / 'data' / 'sample_events.json'
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db.DB_FILE = Path(tmpdir) / 'db.json'
+            messaging.LOG_FILE = Path(tmpdir) / 'log.txt'
+            process_events.process_events(events_file)
+
+            data = json.load(open(db.DB_FILE))
+            self.assertEqual(data['1']['tier'], 'Ultra')
+            self.assertEqual(data['2']['segment'], 'At-Risk')
 
 
 if __name__ == '__main__':
