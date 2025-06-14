@@ -2,6 +2,11 @@ import json
 from pathlib import Path
 import yaml
 import argparse
+import sys
+
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    __package__ = "crm"
 
 from . import db, messaging
 
@@ -85,7 +90,9 @@ def onboard_user(user):
     tier = assign_tier(user, tiers)
     template = load_template(tier)
     message = personalize(template, user)
-    db.update(user['id'], user)
+    record = user.copy()
+    record.update({'segment': segment, 'tier': tier})
+    db.update(user['id'], record)
     print(f"Sending {tier} welcome message to {user.get('name')}:")
     return messaging.send_message(user['name'], message)
 

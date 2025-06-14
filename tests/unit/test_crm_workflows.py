@@ -8,6 +8,7 @@ if str(MODULE_PATH) not in sys.path:
     sys.path.insert(0, str(MODULE_PATH))
 
 from crm import onboarding, retention
+import subprocess
 
 
 class TestCRMWorkflows(unittest.TestCase):
@@ -19,6 +20,16 @@ class TestCRMWorkflows(unittest.TestCase):
         inactive = {'id': 4, 'name': 'Old', 'days_subscribed': 30, 'no_activity_days': 15, 'total_spend': 5}
         msg2 = retention.send_retention_offer(inactive)
         self.assertIn('Old', msg2)
+
+    def test_cli_scripts(self):
+        onboarding_path = MODULE_PATH / 'crm' / 'onboarding.py'
+        result = subprocess.run(
+            [sys.executable, str(onboarding_path), '--name', 'CLI', '--id', '5'],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn('CLI', result.stdout)
 
 
 if __name__ == '__main__':

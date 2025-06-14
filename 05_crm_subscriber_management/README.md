@@ -20,3 +20,12 @@ Example workflows live under `crm/`:
   triggers the appropriate workflow.
 
 Each script logs messages to `crm_logs.txt` in this module's root.
+
+### Running Scripts
+
+You can execute the workflows directly, for example:
+
+```bash
+python crm/onboarding.py --name Alice --id 1
+python crm/process_events.py
+```

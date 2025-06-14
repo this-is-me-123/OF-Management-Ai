@@ -1,5 +1,10 @@
 """Send retention offers to inactive subscribers."""
 from pathlib import Path
+import sys
+
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    __package__ = "crm"
 
 from . import db, messaging
 from .onboarding import load_rules, assign_segment, personalize
@@ -24,7 +29,9 @@ def send_retention_offer(user):
 
     template = load_retention_template()
     message = personalize(template, user)
-    db.update(user['id'], user)
+    record = user.copy()
+    record.update({'segment': segment})
+    db.update(user['id'], record)
     return messaging.send_message(user['name'], message)
 
 
