@@ -15,7 +15,7 @@ function import () {
 	(test -d /import/$1 && cd /import/$1 && cp -Rpn . $DATADIR/$1/)
 }
 
-cd $ORIGINALDIR
+cd "$ORIGINALDIR" || exit 1
 
 # models
 mklink models
