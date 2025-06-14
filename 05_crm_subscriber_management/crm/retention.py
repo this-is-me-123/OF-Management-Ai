@@ -14,10 +14,15 @@ TEMPLATES_DIR = BASE_DIR / 'message_templates'
 
 
 def load_retention_template():
+    """Return the raw markdown template or raise a clear, typed error."""
     path = TEMPLATES_DIR / 'retention_offer.md'
-    with open(path, 'r') as f:
-        return f.read()
-
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Retention template not found at {path}") from None
+    except OSError as exc:
+        raise RuntimeError(f"Unable to read retention template: {exc}") from exc
 
 def send_retention_offer(user):
     """Send a retention message if the user matches the At-Risk segment."""
