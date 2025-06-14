@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Subscriber: {{ sub.username }}</h2>
+<p>Email: {{ sub.email }}</p>
+<p>Tier: {{ sub.tier }}</p>
+<p>Tags: {{ sub.tags or '' }}</p>
+<p>Phone: {{ sub.phone or '' }}</p>
+<p>Joined: {{ sub.joined_at }}</p>
+<p>Last Active: {{ sub.last_active or 'Never' }}</p>
+<h3>Message Log:</h3>
+<ul>
+  {% for log in logs %}
+    <li>{{ log.sent_at }}: {{ log.message }}</li>
+  {% endfor %}
+</ul>
+<a href="/subscriber/{{ sub.id }}/message">Send Message</a>
+{% endblock %}

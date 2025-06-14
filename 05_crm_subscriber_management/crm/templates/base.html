@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CRM Admin</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>CRM Admin Panel</h1>
+        <nav>
+            <a href="/">Dashboard</a> |
+            <a href="/subscribers">Subscribers</a> |
+            <a href="/subscriber/add">Add Subscriber</a> |
+            <a href="/logout">Logout</a>
+        </nav>
+        <hr>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+python-dotenv
+supabase
+python-jose[cryptography]
+requests
+jinja2
+python-multipart
+vonage
+playwright
+psycopg2-binary
+apscheduler
