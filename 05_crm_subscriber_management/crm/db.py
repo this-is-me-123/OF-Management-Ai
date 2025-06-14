@@ -7,10 +7,14 @@ DB_FILE = Path(__file__).resolve().parents[1] / 'data' / 'subscribers_db.json'
 
 def _load():
     if DB_FILE.exists():
-        with open(DB_FILE, 'r') as f:
-            return json.load(f)
+        try:
+            with open(DB_FILE, encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            # Recover by starting from an empty DB instead of crashing
+            print(f"Warning: DB file {DB_FILE} is corrupted. Re-initialising.")
+            return {}
     return {}
-
 
 def _save(data):
     DB_FILE.parent.mkdir(parents=True, exist_ok=True)
