@@ -41,6 +41,6 @@ try:
 except Exception as e:
     print('Update failed.')
     print(str(e))
-
-print('Update succeeded.')
+else:
+    print('Update succeeded.')
 from launch import *
