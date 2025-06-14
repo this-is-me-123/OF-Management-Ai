@@ -5,11 +5,12 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from sqlmodel import SQLModel, create_engine, Session
+from .models import Subscriber
 
 load_dotenv()
 
 DB_FILE = Path(__file__).resolve().parents[1] / 'data' / 'subscribers_db.json'
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./crm.db")
 
 _use_sql = DATABASE_URL not in (None, "json")
 
@@ -51,21 +52,31 @@ def get_session() -> Session:
     return Session(engine)
 
 
-def get(user_id):
-    """Retrieve a subscriber record when using the JSON backend."""
+def get(sub_id: int):
+    """Retrieve a subscriber record by ID."""
     if _use_sql:
-        raise RuntimeError("Use SQLModel sessions with the SQL backend")
+        with get_session() as session:
+            return session.get(Subscriber, sub_id)
     data = _load()
-    return data.get(str(user_id))
+    return data.get(str(sub_id))
 
 
-def update(user_id, info):
-    """Update a subscriber record when using the JSON backend."""
+def update(sub_id: int, info: dict):
+    """Update a subscriber record with the provided data."""
     if _use_sql:
-        raise RuntimeError("Use SQLModel sessions with the SQL backend")
+        with get_session() as session:
+            sub = session.get(Subscriber, sub_id)
+            if not sub:
+                raise ValueError(f"Subscriber {sub_id} not found")
+            for key, value in info.items():
+                if hasattr(sub, key):
+                    setattr(sub, key, value)
+            session.add(sub)
+            session.commit()
+            return sub
     data = _load()
-    existing = data.get(str(user_id), {})
+    existing = data.get(str(sub_id), {})
     existing.update(info)
-    data[str(user_id)] = existing
+    data[str(sub_id)] = existing
     _save(data)
     return existing
