@@ -5,7 +5,8 @@
     "lint": "eslint '**/*.js'",
     "format": "prettier --write '**/*.{js,json,md}'",
     "lint:py": "flake8 .",
-    "format:py": "black . && isort ."
+    "format:py": "black . && isort .",
+    "test": "node backend/test-apply-schema.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

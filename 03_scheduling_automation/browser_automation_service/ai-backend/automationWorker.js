@@ -4,153 +4,250 @@
 try {
   const puppeteerCoreTest = require('puppeteer-core');
   console.log('[AutomationWorker] Successfully required puppeteer-core directly.');
+  // console.log('[AutomationWorker] puppeteer-core path:', require.resolve('puppeteer-core'));
 } catch (e) {
   console.error('[AutomationWorker] CRITICAL: Failed to require puppeteer-core directly at the top of automationWorker.js. This indicates a fundamental module resolution problem.', e);
-  process.exit(1);
+  process.exit(1); // Exit if this basic require fails
 }
 
+// require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const { getSupabaseClient } = require('./supabase_integration');
+
 const supabase = getSupabaseClient();
-const puppeteer = require('puppeteer-extra');
-const { loginOnlyFans } = require('./proxy/puppeteerLogin');
+const puppeteer = require('puppeteer-extra'); // puppeteer-extra
+const { loginOnlyFans, checkLoginStatus, getBrowserPage } = require('./proxy/puppeteerLogin');
 const { sendDirectMessage } = require('./proxy/puppeteerActions');
-const S = require('./selectors');
 
 let globalBrowser = null;
 let globalPage = null;
 
-const POLLING_INTERVAL_MS = 10000;
+const POLLING_INTERVAL_MS = 10000; // Poll every 10 seconds
 const MAX_RETRIES = 3;
 
 async function fetchPendingJobs() {
+    console.log('Fetching pending automation jobs...');
     const { data: jobs, error } = await supabase
         .from('automation_jobs')
         .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: true });
+
     if (error) {
         console.error('Error fetching pending jobs:', error.message);
         return [];
+    }
+    if (jobs && jobs.length > 0) {
+        console.log(`Found ${jobs.length} pending jobs.`);
     }
     return jobs || [];
 }
 
 async function updateJobStatus(jobId, status, resultDetails = null) {
-    const updates = { status, updated_at: new Date().toISOString() };
-    if (status === 'processing') updates.attempts = supabase.sql('attempts + 1');
-    if (resultDetails) updates.result_details = resultDetails;
-
     const { error } = await supabase
         .from('automation_jobs')
-        .update(updates)
+        .update({ 
+            status: status, 
+            result_details: resultDetails,
+            updated_at: new Date().toISOString(),
+            ...(status === 'processing' && { attempts: supabase.sql('attempts + 1') })
+        })
         .eq('id', jobId);
-    if (error) console.error(`Error updating job ${jobId} to ${status}:`, error.message);
-}
 
-async function createOnlyFansPost({ mediaPath, caption }) {
-    // Assumes globalPage is logged in
-    await globalPage.waitForSelector(S.newPostButton);
-    await globalPage.click(S.newPostButton);
-
-    await globalPage.waitForSelector(S.mediaIcon);
-    await globalPage.click(S.mediaIcon);
-    await globalPage.waitForSelector(S.fileInput);
-    const fileInput = await globalPage.$(S.fileInput);
-    await fileInput.uploadFile(mediaPath);
-
-    await globalPage.waitForSelector(S.captionField);
-    await globalPage.click(S.captionField);
-    await globalPage.keyboard.type(caption);
-
-    await globalPage.waitForSelector(S.postButton);
-    await globalPage.click(S.postButton);
-    await globalPage.waitForResponse(r => r.url().includes('/api/posts') && r.status() === 200);
+    if (error) {
+        console.error(`Error updating job ${jobId} to status ${status}:`, error.message);
+    } else {
+        console.log(`Job ${jobId} status updated to ${status}.`);
+    }
 }
 
 async function handleSendDm(job) {
+    console.log(`  [JOB_HANDLER] Processing send_dm job ${job.id} for OF user: ${job.job_payload.target_of_user_id}`);
     const { target_of_user_id, message_content } = job.job_payload;
+
     if (!globalPage || globalPage.isClosed()) {
-        // Re-login logic
-        const loginResult = await loginOnlyFans(
-            process.env.ONLYFANS_USERNAME,
-            process.env.ONLYFANS_PASSWORD,
-            { headless: process.env.HEADLESS !== 'false' }
-        );
-        if (!loginResult.success) return { success: false, details: 'Re-login failed.' };
+        console.error('  [JOB_HANDLER] Global page is not available or closed. Attempting to re-login/re-initialize.');
+        // Attempt to re-initialize. This is a simple recovery, might need more robust handling.
+        const onlyfansUsername = process.env.ONLYFANS_USERNAME;
+        const onlyfansPassword = process.env.ONLYFANS_PASSWORD;
+        if (!onlyfansUsername || !onlyfansPassword) {
+            console.error('  [JOB_HANDLER] CRITICAL: Missing credentials for re-login attempt.');
+            return { success: false, details: 'Missing credentials for re-login.' };
+        }
+        // Prepare proxy options from environment variables for re-login
+        const proxyOptionsRelogin = {};
+        if (process.env.PROXY_HOST && process.env.PROXY_PORT) {
+            proxyOptionsRelogin.host = process.env.PROXY_HOST;
+            proxyOptionsRelogin.port = process.env.PROXY_PORT;
+            if (process.env.PROXY_USERNAME && process.env.PROXY_PASSWORD) {
+                proxyOptionsRelogin.username = process.env.PROXY_USERNAME;
+                proxyOptionsRelogin.password = process.env.PROXY_PASSWORD;
+            }
+        }
+
+        const reloginPuppeteerOpts = {
+            existingBrowser: globalBrowser, 
+            headless: process.env.HEADLESS !== 'false',
+            ...(Object.keys(proxyOptionsRelogin).length > 0 && { proxy: proxyOptionsRelogin })
+        };
+        const loginResult = await loginOnlyFans(onlyfansUsername, onlyfansPassword, reloginPuppeteerOpts);
+        if (!loginResult.success || !loginResult.page) {
+            console.error('  [JOB_HANDLER] Failed to re-initialize Puppeteer page. Skipping job.');
+            return { success: false, details: 'Failed to re-initialize Puppeteer page.' };
+        }
         globalBrowser = loginResult.browser;
         globalPage = loginResult.page;
+        console.log('  [JOB_HANDLER] Re-initialized Puppeteer page successfully.');
     }
 
     try {
+        // Call the imported sendDirectMessage function
         const dmResult = await sendDirectMessage(globalPage, target_of_user_id, message_content);
-        return dmResult.success
-            ? { success: true, details: `DM sent to ${target_of_user_id}` }
-            : { success: false, details: dmResult.error };
-    } catch (e) {
-        console.error('Critical error during sendDirectMessage:', e.message);
-        return { success: false, details: e.message };
+
+        if (dmResult.success) {
+            console.log(`  [JOB_HANDLER] Successfully sent DM to ${target_of_user_id} via puppeteerActions.`);
+            return { success: true, details: `Successfully sent DM to ${target_of_user_id}.` };
+        } else {
+            console.error(`  [JOB_HANDLER] Failed to send DM to ${target_of_user_id} via puppeteerActions: ${dmResult.error}`);
+            return { success: false, details: `Failed to send DM via puppeteerActions: ${dmResult.error}` };
+        }
+
+    } catch (error) {
+        // This catch block might be redundant if sendDirectMessage handles its own errors thoroughly
+        // and returns a structured error. However, it can catch unexpected errors from the call itself.
+        console.error(`  [JOB_HANDLER] Critical error calling sendDirectMessage for ${target_of_user_id}:`, error.message);
+        return { success: false, details: `Critical error during sendDirectMessage call: ${error.message}` };
     }
 }
 
 async function processJob(job) {
-    const attempt = job.attempts + 1;
-    await supabase.from('automation_jobs').update({ status: 'processing', attempts: attempt, updated_at: new Date().toISOString() }).eq('id', job.id);
-    let outcome;
+    console.log(`Processing job ${job.id} (Type: ${job.job_type}, Attempt: ${job.attempts + 1})`); // Log attempt as current attempt
+    // Increment attempt count when we start processing (or re-processing)
+    // The initial fetch gets jobs with status 'pending'. We update to 'processing' and increment attempts.
+    // If it was already 'processing' due to a previous crash, this logic still holds.
+    const currentAttempt = job.attempts + 1;
+    await supabase
+        .from('automation_jobs')
+        .update({ status: 'processing', attempts: currentAttempt, updated_at: new Date().toISOString() })
+        .eq('id', job.id);
 
+    let jobOutcome;
     try {
         switch (job.job_type) {
             case 'send_dm':
-                outcome = await handleSendDm(job);
-                break;
-            case 'create_post':
-                await createOnlyFansPost(job.job_payload);
-                outcome = { success: true };
+                jobOutcome = await handleSendDm(job);
                 break;
             default:
-                outcome = { success: false, details: `Unknown job type: ${job.job_type}` };
+                console.warn(`  Unknown job type: ${job.job_type} for job ${job.id}.`);
+                jobOutcome = { success: false, details: `Unknown job type: ${job.job_type}` };
         }
 
-        if (outcome.success) {
-            await updateJobStatus(job.id, 'completed', outcome);
-        } else if (attempt >= MAX_RETRIES) {
-            await updateJobStatus(job.id, 'failed', outcome);
+        if (jobOutcome.success) {
+            console.log(`  Job ${job.id} completed successfully.`);
+            await updateJobStatus(job.id, 'completed', jobOutcome);
         } else {
-            await updateJobStatus(job.id, 'pending', outcome);
+            console.error(`  Job ${job.id} (Attempt: ${currentAttempt}) failed: ${jobOutcome.details}`);
+            if (currentAttempt >= MAX_RETRIES) {
+                console.warn(`  Job ${job.id} reached max retries (${currentAttempt}). Marking as permanently failed.`);
+                await updateJobStatus(job.id, 'failed', jobOutcome);
+            } else {
+                console.log(`  Job ${job.id} failed on attempt ${currentAttempt} of ${MAX_RETRIES}. Marking as 'pending' for retry.`);
+                // Update status to 'pending' to allow re-processing, keep details of this failure.
+                await updateJobStatus(job.id, 'pending', { ...jobOutcome, note: `Failed on attempt ${currentAttempt}. Will retry.` });
+            }
         }
-    } catch (e) {
-        console.error(`Error processing job ${job.id}:`, e.message);
-        await updateJobStatus(job.id, attempt >= MAX_RETRIES ? 'failed' : 'pending', { success: false, details: e.message });
+    } catch (error) {
+        console.error(`  Critical error processing job ${job.id} (Attempt: ${currentAttempt}):`, error.message);
+        // Also check retries for critical errors
+        if (currentAttempt >= MAX_RETRIES) {
+            await updateJobStatus(job.id, 'failed', { success: false, details: `Critical error: ${error.message} on max attempts.` });
+        } else {
+            await updateJobStatus(job.id, 'failed', { success: false, details: `Critical error: ${error.message} on attempt ${currentAttempt}.` });
+        }
     }
 }
 
 async function main() {
-    if (!process.env.ONLYFANS_USERNAME || !process.env.ONLYFANS_PASSWORD) {
-        console.error('Missing OnlyFans credentials.');
+    console.log('Starting Automation Worker...');
+
+    const onlyfansUsername = process.env.ONLYFANS_USERNAME;
+    const onlyfansPassword = process.env.ONLYFANS_PASSWORD;
+
+    if (!onlyfansUsername || !onlyfansPassword) {
+        console.error('CRITICAL: ONLYFANS_USERNAME or ONLYFANS_PASSWORD environment variables are not set. Worker cannot start.');
         process.exit(1);
     }
 
-    const launchOpts = { headless: process.env.HEADLESS !== 'false' };
-    const loginResult = await loginOnlyFans(
-        process.env.ONLYFANS_USERNAME,
-        process.env.ONLYFANS_PASSWORD,
-        launchOpts
-    );
-    if (!loginResult.success) {
-        console.error('Login failed:', loginResult.error);
+    // Prepare proxy options from environment variables
+    const proxyOptions = {};
+    if (process.env.PROXY_HOST && process.env.PROXY_PORT) {
+        proxyOptions.host = process.env.PROXY_HOST;
+        proxyOptions.port = process.env.PROXY_PORT;
+        if (process.env.PROXY_USERNAME && process.env.PROXY_PASSWORD) {
+            proxyOptions.username = process.env.PROXY_USERNAME;
+            proxyOptions.password = process.env.PROXY_PASSWORD;
+        }
+        console.log(`[AutomationWorker] Proxy configured: ${proxyOptions.host}:${proxyOptions.port}`);
+    } else {
+        console.log('[AutomationWorker] No proxy host/port configured in environment variables.');
+    }
+
+    const puppeteerLaunchOpts = {
+        headless: process.env.HEADLESS !== 'false',
+        // ...(Object.keys(proxyOptions).length > 0 && { proxy: proxyOptions }) // Add proxy to options if configured
+    };
+
+    console.log('Initializing Puppeteer and logging into OnlyFans...');
+    // Pass username, password, and then an options object for proxy/headless settings
+    const loginResult = await loginOnlyFans(onlyfansUsername, onlyfansPassword, puppeteerLaunchOpts); 
+
+    if (!loginResult.success || !loginResult.browser || !loginResult.page) {
+        console.error('Failed to initialize Puppeteer and log in to OnlyFans. Worker cannot start.');
+        console.error('Error details:', loginResult.error);
+        if (loginResult.browser) {
+            await loginResult.browser.close();
+        }
         process.exit(1);
     }
     globalBrowser = loginResult.browser;
     globalPage = loginResult.page;
+    console.log('Successfully logged into OnlyFans with Puppeteer.');
 
+    // Main loop
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         const jobs = await fetchPendingJobs();
-        for (const job of jobs) await processJob(job);
-        await new Promise(r => setTimeout(r, POLLING_INTERVAL_MS));
+        if (jobs.length === 0) {
+            // console.log('No pending jobs. Waiting...');
+        } else {
+            for (const job of jobs) {
+                await processJob(job);
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL_MS));
     }
+
+    // TODO: Graceful shutdown for Puppeteer browser instance
 }
 
-process.on('SIGINT', async () => { console.log('Shutting down...'); if (globalBrowser) await globalBrowser.close(); process.exit(0); });
-process.on('SIGTERM', async () => { console.log('Shutting down...'); if (globalBrowser) await globalBrowser.close(); process.exit(0); });
+async function gracefulShutdown() {
+    console.log('\nGracefully shutting down automation worker...');
+    if (globalBrowser) {
+        console.log('Closing Puppeteer browser...');
+        try {
+            await globalBrowser.close();
+            console.log('Puppeteer browser closed.');
+        } catch (e) {
+            console.error('Error closing Puppeteer browser:', e.message);
+        }
+    }
+    process.exit(0);
+}
 
-main().catch(async e => { console.error('Automation Worker crashed:', e); if (globalBrowser) await globalBrowser.close(); process.exit(1); });
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 
+main().catch(async error => {
+    console.error('Automation Worker crashed:', error);
+    await gracefulShutdown(); // Attempt to close browser even on crash
+    process.exit(1);
+});
