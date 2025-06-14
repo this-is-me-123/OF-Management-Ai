@@ -139,7 +139,7 @@ div:has(> #positive_prompt) {
   display: none;
 }
 
-@-moz-document url-prefix() {
+@-moz-document url-prefix("https://") {
   .lora_weight input[type=number] {
     width: 80px;
   }
