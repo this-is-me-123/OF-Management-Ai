@@ -1,7 +1,8 @@
 // Utility for basic price calculations used in tests.
-function calculatePrice(basePrice, discountRate = 0) {
-  const price = basePrice * (1 - discountRate);
-  return Math.round(price);
+// Returns price in *cents* to avoid FP rounding issues.
+function calculatePrice(basePriceCents, discountRate = 0) {
+  const discounted = Math.round(basePriceCents * (1 - discountRate));
+  return discounted; // caller can divide by 100 when displaying
 }
 
 module.exports = { calculatePrice };
