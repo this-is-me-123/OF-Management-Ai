@@ -18,11 +18,14 @@ This module contains message templates and workflows for subscriber tiers.
 
 Example workflows live under `crm/`:
 
-- `onboarding.py` – loads segmentation rules and tier definitions to send a welcome message.
-- `retention.py` – sends a retention offer to inactive fans.
+- `onboarding.py` – sends the initial welcome and records the subscriber in the database.
+- `retention.py` – emails a retention offer to inactive fans.
+- `churn.py` – marks long inactive subscribers as churned and sends a final message.
 - `process_events.py` – reads events from `data/sample_events.json` and triggers the appropriate workflow.
 
 Each script logs messages to `crm_logs.txt` in this module's root. `process_events.py` also accepts a custom events file via `--file <path>`.
+
+The `scheduler.py` module runs retention checks daily and churn checks weekly.
 
 ### Running Scripts
 

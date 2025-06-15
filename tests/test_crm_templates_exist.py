@@ -6,7 +6,8 @@ def test_crm_templates_exist():
         'inactivity_7day_drip.txt',
         'vip_upsell_offer.txt',
         'milestone_celebration.txt',
-        'renewal_reminder.txt'
+        'renewal_reminder.txt',
+        'churn_warning_followup.txt'
     ]
     base = '05_crm_subscriber_management/message_templates'
     for t in templates:
