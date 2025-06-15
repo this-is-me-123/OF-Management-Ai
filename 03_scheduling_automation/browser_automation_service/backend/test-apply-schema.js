@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const script = resolve(__dirname, 'apply-schema.js');
+const dbFile = resolve(__dirname, 'logs.db');
 
 // Run apply-schema.js from this backend directory regardless of CWD
 exec(`node ${script}`, (err, stdout, stderr) => {
@@ -14,8 +15,8 @@ exec(`node ${script}`, (err, stdout, stderr) => {
   }
   console.log('Apply-schema output:', stdout);
 
-  // Verify via sqlite3 CLI:
-  exec("sqlite3 logs.db \".tables\"", (err2, out2) => {
+  // Verify via sqlite3 CLI using the same db path:
+  exec(`sqlite3 ${dbFile} \".tables\"`, (err2, out2) => {
     if (err2) {
       console.error('Listing tables failed:', err2);
       process.exit(1);
