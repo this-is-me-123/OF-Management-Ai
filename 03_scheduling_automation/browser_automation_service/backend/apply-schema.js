@@ -10,8 +10,16 @@ import {
 
 (async () => {
   try {
-    // Initialize SQL.js database in the current directory
-    await createDbConnection(path.resolve('logs.db'));
+    // Resolve the SQLite DB path relative to this file so tests can run from
+    // any working directory. This avoids creating the database in whatever
+    // directory the script was invoked from.
+    const dbFile = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      'logs.db'
+    );
+
+    // Initialize SQL.js database using the resolved absolute path
+    await createDbConnection(dbFile);
 
     // Read the schema SQL
     const schemaPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'schema.sql');
