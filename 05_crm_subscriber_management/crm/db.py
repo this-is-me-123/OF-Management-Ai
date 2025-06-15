@@ -4,8 +4,9 @@ import json
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from sqlmodel import SQLModel, create_engine, Session
-from .models import Subscriber
+from sqlmodel import SQLModel, create_engine, Session, select
+from .models import Subscriber, SegmentRule, TierDefinition
+import yaml
 
 load_dotenv()
 
@@ -80,3 +81,41 @@ def update(sub_id: int, info: dict):
     data[str(sub_id)] = existing
     _save(data)
     return existing
+
+
+def get_segment_rules():
+    """Return segmentation rules from the DB or configuration file."""
+    rules_file = Path(__file__).resolve().parents[1] / "segmentation_rules.json"
+    if _use_sql:
+        with get_session() as session:
+            rows = session.exec(select(SegmentRule)).all()
+            if rows:
+                return [json.loads(r.rule_json) for r in rows]
+    with open(rules_file, encoding="utf-8") as f:
+        data = json.load(f)
+    rules = data.get("rules", [])
+    if _use_sql:
+        with get_session() as session:
+            for r in rules:
+                session.add(SegmentRule(segment=r.get("segment"), rule_json=json.dumps(r)))
+            session.commit()
+    return rules
+
+
+def get_tier_definitions():
+    """Return tier definitions from the DB or YAML file."""
+    tiers_file = Path(__file__).resolve().parents[1] / "tier_definitions.yaml"
+    if _use_sql:
+        with get_session() as session:
+            rows = session.exec(select(TierDefinition)).all()
+            if rows:
+                return [{"name": r.name, "criteria": r.criteria} for r in rows]
+    with open(tiers_file, encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    tiers = data.get("tiers", [])
+    if _use_sql:
+        with get_session() as session:
+            for t in tiers:
+                session.add(TierDefinition(name=t.get("name"), criteria=t.get("criteria", "")))
+            session.commit()
+    return tiers
