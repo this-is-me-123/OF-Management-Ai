@@ -26,4 +26,5 @@ Thumbs.db
 
 # SQLite databases
 *.sqlite
+*.db
 

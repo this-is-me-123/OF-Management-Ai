@@ -2,12 +2,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CRM_PATH = ROOT / '05_crm_subscriber_management' / 'crm'
-if str(CRM_PATH) not in sys.path:
-    sys.path.insert(0, str(CRM_PATH))
+PROJECT_ROOT = ROOT / '05_crm_subscriber_management'
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-from db import init_db, get_session, get_segment_rules
-from models import SegmentRule
+from crm.db import init_db, get_session, get_segment_rules
+from crm.models import SegmentRule
 from sqlmodel import select
 
 
