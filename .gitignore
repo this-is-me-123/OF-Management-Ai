@@ -7,6 +7,11 @@ __pycache__/
 
 # Environment files
 .env
+.env.*
+!*.env.example
+
+# Vendor directories
+04_content_generation/stable-diffusion-webui/
 
 # Logs
 *.log
@@ -21,4 +26,5 @@ Thumbs.db
 
 # SQLite databases
 *.sqlite
+*.db
 

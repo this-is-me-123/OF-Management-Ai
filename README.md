@@ -15,16 +15,18 @@ This repository organizes automation scripts and planning resources for managing
 
 ## Setup
 
-1. Install Python dependencies:
+1. Copy any `*.env.example` file to `.env` and update values.
+2. Install Python dependencies:
    ```bash
    pip install -r common/requirements.txt
+   pip install -r 05_crm_subscriber_management/crm/requirements.txt
    ```
-2. Install Node dependencies in modules that contain a `package.json`, for example:
+3. Install Node dependencies in modules that contain a `package.json`, for example:
    ```bash
    cd 03_scheduling_automation/browser_automation_service
    npm install
    ```
-3. Run tests from the repository root:
+4. Run tests from the repository root:
    ```bash
    pytest
    npm test
