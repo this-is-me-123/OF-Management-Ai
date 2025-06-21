@@ -11,6 +11,6 @@ This repository contains the backend services for an AI-driven OnlyFans manageme
 - `utils/`: Shared utilities and middleware
 
 ## Setup
-1. Copy `.env` and fill in environment variables.
+1. Copy `.env.example` to `.env` and fill in environment variables.
 2. Run `npm install`.
 3. Run `npm start`.
