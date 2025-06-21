@@ -1,6 +1,4 @@
-{
-  "prompts": [
-    "A seductive pose in soft lighting, boudoir theme, pastel background",
-    "Glamorous evening look with champagne glass, confident expression"
-  ]
-}
+[
+  { "prompt": "A seductive pose in soft lighting, boudoir theme, pastel background" },
+  { "prompt": "Glamorous evening look with champagne glass, confident expression" }
+]

@@ -1,7 +1,13 @@
-# CRM & Subscriber Management
+# CRM & Subscriber Management (Finalized ✅)
 
-This module contains message templates and workflows for subscriber tiers.
+## Features
+- Tiered welcome and retention messages
+- Message template generator API (`/generate`)
+- Message sender API with logging (`/send`)
+- Redis-powered async message queue
+- Message log saved to `logs/message_log.jsonl`
 
+<<<<<<< Updated upstream
 ## Structure
 - `message_templates/` - Text or Markdown templates for subscriber outreach.
 - `tier_definitions.yaml` - Tier names and criteria.
@@ -30,8 +36,24 @@ The `scheduler.py` module runs retention checks daily and churn checks weekly.
 ### Running Scripts
 
 You can execute the workflows directly, for example:
+=======
+## To Run
+>>>>>>> Stashed changes
 
+1. **Start Flask API**
 ```bash
-python crm/onboarding.py --name Alice --id 1
-python crm/process_events.py
+cd api
+python generate_message.py
 ```
+
+2. **Dispatch a test job**
+```bash
+python queue/dispatch_job.py
+```
+
+3. **Run the queue worker**
+```bash
+python queue/worker.py
+```
+
+Make sure Redis is running locally on port 6379.

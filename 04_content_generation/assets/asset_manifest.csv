@@ -1,0 +1,3 @@
+output_file,caption_file,video_file,prompt,caption,asset_type,width,height,seed,model
+cover_1.png,,,"A seductive pose in soft lighting, boudoir theme, pastel background",,cover,512,768,260689586,default
+cover_2.png,,,"Glamorous evening look with champagne glass, confident expression",,cover,512,768,1237979695,default

@@ -11,7 +11,7 @@ def extract_payments():
     response = requests.get(f'{OF_API_URL}/payments', headers=headers)
     data = response.json()
 
-    with open('../data/raw_payments_2025_05.csv', 'w', newline='') as csvfile:
+    with open('../data/raw_payments_2025_05.csv', 'w', newline='', encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['subscriber_id', 'amount', 'date'])
         for rec in data['payments']:

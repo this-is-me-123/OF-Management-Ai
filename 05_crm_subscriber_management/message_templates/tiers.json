@@ -1,0 +1,14 @@
+{
+  "Trial": {
+    "Welcome": "Welcome to the VIP experience! Let me know what you're into 💕",
+    "Retention": "Haven’t heard from you in a bit – ready to heat things up again?"
+  },
+  "Standard": {
+    "Welcome": "Glad to have you! Ask me anything 😘",
+    "Retention": "It’s been a while – I’ve got something special waiting 💌"
+  },
+  "VIP": {
+    "Welcome": "Welcome, king 👑 You now have full VIP access.",
+    "Retention": "VIPs never stay quiet this long… want a surprise tonight?"
+  }
+}

@@ -15,7 +15,7 @@ for msg in raw:
         'completion': f" {clean_text(msg['bot_response'])}"
     })
 
-with open('cleaned_dms.jsonl', 'w') as f:
+with open('cleaned_dms.jsonl', 'w', encoding="utf-8") as f:
     for item in cleaned:
         f.write(json.dumps(item) + '\n')
 

@@ -1,120 +1,108 @@
-"""Simple bigram fine-tuning for the DM persona dataset."""
+"""Simple bigram fine-tuning on cleaned DM responses.
 
-import argparse
+This module trains a lightweight bigram language model using the
+messages stored in ``full_dm_archive_cleaned.json``. It writes a
+``training_curves.json`` file containing the loss value for each
+epoch and a ``sample_outputs.txt`` file with generated samples.
+The implementation uses only the Python standard library so it can
+run in restricted environments.
+"""
+
+from __future__ import annotations
+
 import json
 import math
-import os
 import random
+from collections import Counter, defaultdict
 from pathlib import Path
+from typing import Iterable, List, Tuple
 
 
 class BigramModel:
-    """Character-level bigram model with add-one smoothing."""
+    """A minimal bigram language model with Laplace smoothing."""
 
-    def __init__(self):
-        self.counts = {}
-        self.totals = {}
-        self.vocab = set()
+    def __init__(self) -> None:
+        self.counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
+        self.vocab: set[str] = set()
 
-    def train(self, texts):
-        for text in texts:
-            prev = "<s>"
-            for ch in text:
-                self.vocab.add(ch)
-                self.counts.setdefault(prev, {})
-                self.counts[prev][ch] = self.counts[prev].get(ch, 0) + 1
-                self.totals[prev] = self.totals.get(prev, 0) + 1
-                prev = ch
-            # end token
-            self.counts.setdefault(prev, {})
-            self.counts[prev]["</s>"] = self.counts[prev].get("</s>", 0) + 1
-            self.totals[prev] = self.totals.get(prev, 0) + 1
+    def update(self, tokens: Iterable[str]) -> None:
+        tokens = list(tokens)
+        self.vocab.update(tokens)
+        for i in range(len(tokens) - 1):
+            self.counts[tokens[i]][tokens[i + 1]] += 1
 
-    def _prob(self, prev, ch):
-        vocab_size = len(self.vocab) + 1  # include end token
-        return (self.counts.get(prev, {}).get(ch, 0) + 1) / (
-            self.totals.get(prev, 0) + vocab_size
-        )
+    def _loss(self, texts: Iterable[List[str]]) -> float:
+        vocab_size = max(len(self.vocab), 1)
+        total_nll = 0.0
+        total_tokens = 0
+        for tokens in texts:
+            for i in range(len(tokens) - 1):
+                prev_tok = tokens[i]
+                next_tok = tokens[i + 1]
+                dist = self.counts[prev_tok]
+                total = sum(dist.values()) + vocab_size
+                count = dist.get(next_tok, 0) + 1
+                prob = count / total
+                total_nll += -math.log(prob)
+                total_tokens += 1
+        return total_nll / total_tokens if total_tokens else 0.0
 
-    def loss(self, texts):
-        nll = 0.0
-        count = 0
-        for text in texts:
-            prev = "<s>"
-            for ch in text:
-                prob = self._prob(prev, ch)
-                nll -= math.log(prob)
-                count += 1
-                prev = ch
-            prob = self._prob(prev, "</s>")
-            nll -= math.log(prob)
-            count += 1
-        return nll / count if count else 0.0
+    def train(self, texts: Iterable[str], epochs: int = 5) -> List[float]:
+        tokenized = [t.split() for t in texts]
+        losses = []
+        for _ in range(epochs):
+            for tokens in tokenized:
+                self.update(tokens)
+            losses.append(self._loss(tokenized))
+        return losses
 
-    def generate(self, prompt="", max_len=50):
-        prev = prompt[-1] if prompt else "<s>"
-        out = []
-        for _ in range(max_len):
-            choices = self.counts.get(prev)
-            if not choices:
-                break
-            items = list(choices.items())
-            total = sum(c for _, c in items)
-            r = random.randint(1, total)
-            acc = 0
-            next_ch = None
-            for ch, c in items:
-                acc += c
-                if r <= acc:
-                    next_ch = ch
-                    break
-            if next_ch == "</s>" or next_ch is None:
-                break
-            out.append(next_ch)
-            prev = next_ch
-        return "".join(out)
+    def generate(self, seed: str = "", length: int = 15) -> str:
+        if not self.vocab:
+            return seed
+        tokens = seed.split() if seed else [random.choice(list(self.vocab))]
+        for _ in range(length):
+            prev = tokens[-1]
+            dist = self.counts[prev]
+            if dist:
+                words, weights = zip(*dist.items())
+                tokens.append(random.choices(words, weights=weights)[0])
+            else:
+                tokens.append(random.choice(list(self.vocab)))
+        return " ".join(tokens)
 
 
-def load_texts(path):
-    if path.endswith(".jsonl"):
-        with open(path) as f:
-            return [json.loads(line)["completion"].strip() for line in f if line.strip()]
-    else:
-        data = json.load(open(path))
-        msgs = data.get("messages", [])
-        return [m.get("response", "") for m in msgs]
+def load_responses(path: str | Path) -> List[str]:
+    with open(path) as f:
+        data = json.load(f)
+    return [m["response"] for m in data.get("messages", [])]
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Train a simple bigram model")
-    parser.add_argument("--data", default="cleaned_dms.jsonl", help="Training dataset")
-    parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--out_dir", default="training_outputs")
-    args = parser.parse_args()
+def run_training(
+    data_path: str | Path,
+    output_dir: str | Path = "training_outputs",
+    epochs: int = 5,
+    seed_text: str = "Hey",
+) -> Tuple[Path, Path]:
+    """Train the bigram model and write curve and sample files."""
 
-    texts = load_texts(args.data)
-    if not texts:
-        raise SystemExit(f"No training data found at {args.data}")
-
+    texts = load_responses(data_path)
     model = BigramModel()
-    losses = []
-    for epoch in range(1, args.epochs + 1):
-        random.shuffle(texts)
-        model.train(texts)
-        loss = model.loss(texts)
-        losses.append({"epoch": epoch, "loss": loss})
-        print(f"Epoch {epoch} loss: {loss:.4f}")
+    losses = model.train(texts, epochs=epochs)
 
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(exist_ok=True)
-    with open(out_dir / "training_curves.json", "w") as f:
-        json.dump(losses, f, indent=2)
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    samples = [model.generate() for _ in range(3)]
-    with open(out_dir / "sample_outputs.txt", "w") as f:
-        for s in samples:
-            f.write(s + "\n")
+    curves_file = out_dir / "training_curves.json"
+    with curves_file.open("w", encoding="utf-8") as f:
+        json.dump({"loss": losses}, f, indent=2)
+
+    samples_file = out_dir / "sample_outputs.txt"
+    with samples_file.open("w", encoding="utf-8") as f:
+        for _ in range(3):
+            f.write(model.generate(seed_text) + "\n")
+
+    return curves_file, samples_file
 
 
 if __name__ == "__main__":
-    main()
+    run_training(Path(__file__).resolve().parent.parent / "full_dm_archive_cleaned.json")
