@@ -10,6 +10,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ## Structure
 - `message_templates/` - Text or Markdown templates for subscriber outreach.
 - `tier_definitions.yaml` - Tier names and criteria.
@@ -38,6 +39,9 @@ The `scheduler.py` module runs retention checks daily and churn checks weekly.
 ### Running Scripts
 
 You can execute the workflows directly, for example:
+=======
+## To Run
+>>>>>>> Stashed changes
 =======
 ## To Run
 >>>>>>> Stashed changes
