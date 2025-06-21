@@ -28,7 +28,6 @@ This repository organizes automation scripts and planning resources for managing
    ```
 4. Run tests from the repository root:
    ```bash
-   pytest
-   npm test
+   ./run_all_tests.sh
    ```
 
