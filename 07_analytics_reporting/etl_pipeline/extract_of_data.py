@@ -1,10 +1,11 @@
 # extract_of_data.py
 
+import os
 import requests
 import csv
 
 OF_API_URL = 'https://api.onlyfans.com/v2'  # hypothetical endpoint
-API_KEY = '<your_of_api_key>'
+API_KEY = os.getenv('OF_API_KEY', '')
 
 def extract_payments():
     headers = {'Authorization': f'Bearer {API_KEY}'}
