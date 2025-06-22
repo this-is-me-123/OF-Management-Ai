@@ -55,6 +55,13 @@ Modular system for OnlyFans management, content, AI persona engagement, CRM, rev
 
 ---
 
+## 🔑 Environment Variables
+
+Copy `.env.example` to `.env` and fill in required tokens like
+`OPENAI_API_KEY` and `OF_API_KEY`.
+
+---
+
 ## ⚡️ Automation Overview
 
 - **All major workflows are scriptable for cron/CI.**
