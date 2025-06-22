@@ -8,8 +8,7 @@
 - Do not commit `.env` files or other secrets. Use `*.env.example` templates instead.
 
 ## Testing
-- Run `pytest` from the repo root for Python tests.
-- Run `npm test` from the repo root for Node tests.
+- Run `./run_all_tests.sh` from the repo root to execute Python and Node tests.
 
 ## Setup
 - Run `./setup_venv.sh` to create a virtual environment and install Python dependencies.
