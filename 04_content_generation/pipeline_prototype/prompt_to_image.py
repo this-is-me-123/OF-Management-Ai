@@ -10,8 +10,9 @@ from dotenv import load_dotenv
 import smtplib
 from email.mime.text import MIMEText
 
-# Load environment variables from .env file (adjust the path as needed)
-load_dotenv(dotenv_path="G:/Other computers/My Laptop/GitHub/OF-Management-Ai/04_content_generation/.env")
+# Load environment variables from a .env file located next to this script
+ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=ENV_PATH)
 
 
 import sys
