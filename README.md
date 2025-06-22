@@ -16,10 +16,9 @@ This repository organizes automation scripts and planning resources for managing
 ## Setup
 
 1. Copy any `*.env.example` file to `.env` and update values.
-2. Install Python dependencies:
+2. Create a Python virtual environment and install dependencies:
    ```bash
-   pip install -r common/requirements.txt
-   pip install -r 05_crm_subscriber_management/crm/requirements.txt
+   ./setup_venv.sh
    ```
 3. Install Node dependencies in modules that contain a `package.json`, for example:
    ```bash
