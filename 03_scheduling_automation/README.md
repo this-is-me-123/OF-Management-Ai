@@ -7,6 +7,7 @@ This module handles scheduling posts to OnlyFans (and optionally Hootsuite).
 - `config/` - Configuration files (times, retries, API keys).
 - `docs/` - API specs and architecture diagrams.
 - `publishService.js` - Helper that publishes posts to OnlyFans or Hootsuite.
+- `browser_automation_service/frontend/src/components/` - React components for the scheduler UI.
 
 ## Getting Started
 1. Fill in `config/hootsuite_credentials.json` with your Hootsuite API keys.
