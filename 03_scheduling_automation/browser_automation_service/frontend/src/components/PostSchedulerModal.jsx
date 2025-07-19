@@ -1,13 +1,20 @@
 import React, { useState } from "react";
 import { useScheduledPosts } from "../hooks/useScheduledPosts";
+import MediaUploader from "./MediaUploader";
 
 export const PostSchedulerModal = ({ date, onClose }) => {
   const { addPost } = useScheduledPosts();
   const [caption, setCaption] = useState("");
   const [tags, setTags] = useState("");
+  const [media, setMedia] = useState(null);
 
   const handleSubmit = () => {
-    addPost({ datetime: date, caption, tags: tags.split(",") });
+    addPost({
+      datetime: date,
+      caption,
+      tags: tags.split(","),
+      fileName: media ? media.name : null,
+    });
     onClose();
   };
 
@@ -28,6 +35,7 @@ export const PostSchedulerModal = ({ date, onClose }) => {
           value={tags}
           onChange={e => setTags(e.target.value)}
         />
+        <MediaUploader onSelect={setMedia} />
         <div className="flex justify-between">
           <button onClick={handleSubmit} className="bg-blue-600 text-white p-2 px-4 rounded">Save</button>
           <button onClick={onClose} className="bg-gray-300 text-black p-2 px-4 rounded">Cancel</button>
