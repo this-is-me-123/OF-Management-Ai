@@ -1,5 +1,0 @@
-[
-  {"type": "new_subscription", "name": "Alice", "email": "alice@example.com", "days_subscribed": 0, "total_spend": 0},
-  {"type": "inactivity"},
-  {"type": "churn_check"}
-]

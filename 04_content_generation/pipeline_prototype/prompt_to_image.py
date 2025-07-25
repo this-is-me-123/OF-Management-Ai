@@ -1,4 +1,3 @@
-
 import requests
 import json
 import base64
@@ -13,7 +12,6 @@ from email.mime.text import MIMEText
 # Load environment variables from a .env file located next to this script
 ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
-
 
 import sys
 prompt_arg = sys.argv[1] if len(sys.argv) > 1 else None
@@ -139,7 +137,7 @@ for idx, entry in enumerate(prompts):
     if asset_type in ["cover", "teaser", "image"]:
         payload = {
             "prompt": prompt,
-            "steps": 20,
+            "steps": 10,
             "width": width,
             "height": height,
             "seed": seed,
@@ -147,7 +145,7 @@ for idx, entry in enumerate(prompts):
         if model:
             payload["override_settings"] = {"sd_model_checkpoint": model}
         try:
-            response = requests.post(SD_API_URL, json=payload, timeout=120)
+            response = requests.post(SD_API_URL, json=payload, timeout=600)
             response.raise_for_status()
             img_b64 = response.json()["images"][0]
             img_bytes = base64.b64decode(img_b64)
@@ -187,7 +185,7 @@ for idx, entry in enumerate(prompts):
     })
 
 # Write manifest CSV
-with open(MANIFEST_PATH, "w", newline='', encoding="utf-8") as csvfile:
+with open(MANIFEST_PATH, "w", newline="", encoding="utf-8") as csvfile:
     fieldnames = ["output_file", "caption_file", "video_file", "prompt", "caption", "asset_type", "width", "height", "seed", "model"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()

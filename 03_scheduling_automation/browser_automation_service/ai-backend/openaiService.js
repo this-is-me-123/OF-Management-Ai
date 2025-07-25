@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const OPENAI_CHAT_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_IMAGE_API_URL = 'https://api.openai.com/v1/images/generations';
-const DEFAULT_CHAT_MODEL = 'gpt-3.5-turbo';
+const DEFAULT_CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || 'gpt-3.5-turbo';
 const DEFAULT_IMAGE_MODEL = 'dall-e-3'; // Or 'dall-e-2' if preferred
 
 /**
@@ -52,11 +52,13 @@ async function generateChatCompletion(messages, model = DEFAULT_CHAT_MODEL) {
     }
   } catch (error) {
     if (error.response) {
-      console.error('[OpenAIService - Chat] Error calling OpenAI API:', error.response.status, error.response.data);
+      // Log full error from OpenAI
+      console.error('[OpenAIService] Error calling OpenAI API:', error.response.status, error.response.data);
+      return `Error: OpenAI API error (${error.response.status}): ${JSON.stringify(error.response.data)}`;
     } else {
-      console.error('[OpenAIService - Chat] Error setting up OpenAI request:', error.message);
+      console.error('[OpenAIService] Error during chat completion:', error.message);
+      return `Error: ${error.message}`;
     }
-    return 'Sorry, there was an error communicating with the AI chat service.';
   }
 }
 

@@ -1,7 +1,8 @@
 // Service to store and fetch messages via Supabase
-const supabase = require('../supabase_integration');
+const { getSupabaseClient } = require('../supabase_integration');
+const supabase = getSupabaseClient();
 
-const MESSAGES_TABLE = 'chat_messages';
+const MESSAGES_TABLE = 'messages';
 
 /**
  * Inserts a message into the Supabase database.
@@ -18,14 +19,22 @@ async function insertMessage(messageData) {
     return null;
   }
   try {
+    // Map backend fields to Supabase schema
+    const mapped = {
+      user_id: messageData.user_id, // must be a uuid string
+      message: messageData.text, // backend 'text' -> 'message'
+      role: messageData.sender_type // backend 'sender_type' -> 'role'
+      // conversation_id is omitted since not in schema
+    };
     const { data, error } = await supabase
       .from(MESSAGES_TABLE)
-      .insert([messageData])
+      .insert([mapped])
       .select(); // .select() returns the inserted rows
 
     if (error) {
       console.error('[MessageService] Error inserting message into Supabase:', error.message);
-      return null;
+      // Attach error to returned object for debugging
+      return { _error: true, message: error.message, details: error.details, code: error.code };
     }
     console.log('[MessageService] Message inserted successfully:', data && data[0]);
     return data && data.length > 0 ? data[0] : null;

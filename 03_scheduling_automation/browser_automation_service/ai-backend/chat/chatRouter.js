@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const messageService = require('./messageService');
 const openaiService = require('../openaiService'); // Updated to use the new OpenAI service
+const { getSupabaseClient } = require('../supabase_integration');
+const supabase = getSupabaseClient();
 
 /**
  * Endpoint to send a message from a user and get an AI reply.
@@ -25,6 +27,10 @@ router.post('/send', async (req, res) => {
   try {
     const savedUserMessage = await messageService.insertMessage(userMessage);
     if (!savedUserMessage) {
+      // Return full error if available
+      if (savedUserMessage && savedUserMessage._error) {
+        return res.status(500).json({ error: 'Failed to save user message.', supabase: savedUserMessage });
+      }
       return res.status(500).json({ error: 'Failed to save user message.' });
     }
 
@@ -44,11 +50,16 @@ router.post('/send', async (req, res) => {
     }
 
         // Construct messages for the new openaiService.generateChatCompletion
+    // Filter out invalid historical messages
+    const historyForAI = conversationHistory.filter(msg => typeof msg.content === 'string' && msg.content.trim().length > 0);
+    // Always include the current user message
     const messagesForAI = [
-      ...conversationHistory, // conversationHistory is already { role, content } and in chronological order
-      { role: 'user', content: savedUserMessage.text }
+      ...historyForAI,
+      { role: 'user', content: text }
     ];
+
     const aiReplyText = await openaiService.generateChatCompletion(messagesForAI);
+
 
     if (!aiReplyText || aiReplyText.startsWith('Error:') || aiReplyText.startsWith('Sorry,')) {
         // Handle case where AI client returned an error message
@@ -71,7 +82,12 @@ router.post('/send', async (req, res) => {
       console.error('[ChatRouter] Failed to save AI message.');
     }
 
-    res.status(201).json({ userMessage: savedUserMessage, aiMessage: savedAiMessage || aiMessage });
+    // Always return both userMessage and aiMessage, even if AI reply errored
+    res.status(201).json({
+      userMessage: savedUserMessage,
+      aiMessage: savedAiMessage || aiMessage || { error: 'No AI reply generated.' },
+      debug: { messagesForAI, aiReplyText }
+    });
 
   } catch (error) {
     console.error('[ChatRouter] Error in /send endpoint:', error.message);
@@ -100,6 +116,40 @@ router.get('/receive', async (req, res) => {
   } catch (error) {
     console.error('[ChatRouter] Error in /receive endpoint:', error.message);
     res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+/**
+ * Endpoint to fetch recent messages for a user (optionally by conversation_id)
+ * Expects req.body: { user_id: string, conversation_id?: string, limit?: number }
+ */
+router.post('/receive', async (req, res) => {
+  const { user_id, conversation_id, limit } = req.body;
+  if (!user_id) {
+    return res.status(400).json({ error: 'Missing user_id in request body.' });
+  }
+  try {
+    // Build query for Supabase messages table
+    let query = supabase
+      .from('messages')
+      .select('*')
+      .eq('user_id', user_id);
+    if (conversation_id) {
+      query = query.eq('conversation_id', conversation_id);
+    }
+    query = query.order('created_at', { ascending: false });
+    if (limit) {
+      query = query.limit(limit);
+    } else {
+      query = query.limit(20); // default to 20
+    }
+    const { data, error } = await query;
+    if (error) {
+      return res.status(500).json({ error: 'Failed to fetch messages.', supabase: error });
+    }
+    return res.json({ messages: data });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error.', details: err.message });
   }
 });
 

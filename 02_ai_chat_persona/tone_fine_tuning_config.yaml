@@ -1,8 +1,0 @@
-model: gpt-4
-temperature: 0.85
-max_tokens: 200
-tone_profile:
-  - flirty
-  - confident
-  - emotionally engaging
-training_data: seed_dm_snippets.json

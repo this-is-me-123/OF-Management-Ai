@@ -1,5 +1,0 @@
-transformers
-pandas
-matplotlib
-openai
-pyyaml

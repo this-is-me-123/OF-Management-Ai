@@ -1,7 +1,0 @@
-{
-  "timestamp": "2025-05-24T21:33:02.610456Z",
-  "status": "error",
-  "finalUrl": "https://example.com/session-5",
-  "error": "Login failed",
-  "captchaDetected": false
-}

@@ -119,6 +119,8 @@ async function handleSendDm(job) {
     }
 }
 
+const { triggerContentGeneration, getLatestAsset } = require('./utils/contentGeneration');
+
 async function processJob(job) {
     console.log(`Processing job ${job.id} (Type: ${job.job_type}, Attempt: ${job.attempts + 1})`); // Log attempt as current attempt
     // Increment attempt count when we start processing (or re-processing)
@@ -132,6 +134,20 @@ async function processJob(job) {
 
     let jobOutcome;
     try {
+        // === Content Generation Integration ===
+        let genResult, latestAsset;
+        try {
+            genResult = await triggerContentGeneration();
+            latestAsset = getLatestAsset();
+            console.log('[AutomationWorker] Generated asset:', latestAsset);
+            if (latestAsset && latestAsset.image_path) {
+                job.job_payload = job.job_payload || {};
+                job.job_payload.asset_path = latestAsset.image_path;
+                console.log(`[DELIVERY] Automation job ${job.id} will use asset: ${latestAsset.image_path}`);
+            }
+        } catch (e) {
+            console.error('[AutomationWorker] Content generation failed:', e);
+        }
         switch (job.job_type) {
             case 'send_dm':
                 jobOutcome = await handleSendDm(job);

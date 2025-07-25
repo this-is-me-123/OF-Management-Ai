@@ -1,7 +1,0 @@
-tiers:
-  - name: Basic
-    criteria: Standard subscription
-  - name: VIP
-    criteria: Mid-tier subscribers with perks
-  - name: Ultra
-    criteria: Top-tier subscribers with exclusive access

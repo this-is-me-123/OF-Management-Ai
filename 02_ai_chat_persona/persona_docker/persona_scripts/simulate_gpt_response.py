@@ -1,9 +1,8 @@
-import os
 import openai
 from inject_persona_prompt import load_prompts
 
-# Read OpenAI API key from environment
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
+# Set your OpenAI API key
+openai.api_key = "YOUR_API_KEY"
 
 def simulate_chat_response(tier, message_type):
     prompt = load_prompts(tier=tier, message_type=message_type)

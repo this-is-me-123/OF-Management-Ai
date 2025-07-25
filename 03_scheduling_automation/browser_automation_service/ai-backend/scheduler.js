@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getSupabaseClient } = require('./supabase_integration');
 
+// Health check endpoint for /api/scheduler
+router.get('/', (req, res) => {
+  res.json({ status: 'scheduler module active' });
+});
+
 // POST /api/scheduler/dm - Schedule a new Direct Message
 router.post('/dm', async (req, res, next) => {
   // --- API Key Authentication ---
@@ -26,6 +31,21 @@ router.post('/dm', async (req, res, next) => {
 
   console.log('[API /scheduler/dm] Received request to schedule DM:', req.body);
   const { targetOfUserId, messageTemplateId, username, sourceUserId } = req.body;
+
+  // === Content Generation Integration ===
+  const { triggerContentGeneration, getLatestAsset } = require('./utils/contentGeneration');
+  let genResult, latestAsset;
+  try {
+    genResult = await triggerContentGeneration();
+    latestAsset = getLatestAsset();
+    console.log('[API /scheduler/dm] Generated asset:', latestAsset);
+    if (latestAsset && latestAsset.image_path) {
+      req.body.asset_path = latestAsset.image_path;
+      console.log(`[DELIVERY] Scheduled DM/post for ${username} with asset: ${latestAsset.image_path}`);
+    }
+  } catch (e) {
+    console.error('[API /scheduler/dm] Content generation failed:', e);
+  }
 
   // Basic validation
   // --- Basic Presence Validation ---
