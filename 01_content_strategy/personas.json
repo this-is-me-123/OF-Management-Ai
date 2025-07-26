@@ -1,0 +1,16 @@
+[
+  {
+    "id": "persona1",
+    "name": "Fitness Enthusiast",
+    "age_range": "18-35",
+    "interests": ["workouts", "nutrition", "motivation"],
+    "goals": ["follow workout routines", "get healthy recipes"]
+  },
+  {
+    "id": "persona2",
+    "name": "Lifestyle Follower",
+    "age_range": "25-40",
+    "interests": ["daily vlogs", "fashion", "travel"],
+    "goals": ["stay updated on personal life", "get style tips"]
+  }
+]
