@@ -1,0 +1,6 @@
+transformers
+pandas
+matplotlib
+openai
+scikit-learn
+joblib

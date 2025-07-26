@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "event": "low_engagement",
+      "action": "send_discount_ppv"
+    },
+    {
+      "event": "top_fan",
+      "action": "offer_exclusive_bundle"
+    },
+    {
+      "event": "renewal_window",
+      "action": "reminder_message"
+    }
+  ]
+}

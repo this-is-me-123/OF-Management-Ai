@@ -1,0 +1,7 @@
+tiers:
+  - name: Bronze
+    criteria: First-time sub
+  - name: Silver
+    criteria: Subscribed > 1 month
+  - name: Gold
+    criteria: >3 months + frequent PPV buyer

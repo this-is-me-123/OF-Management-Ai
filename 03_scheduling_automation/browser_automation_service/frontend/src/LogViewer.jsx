@@ -1,0 +1,1 @@
+export default function LogViewer() { return <div className="p-4">Log Viewer</div>; }
