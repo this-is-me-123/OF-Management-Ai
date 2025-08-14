@@ -1,0 +1,158 @@
+{
+  "personas": {
+    "sweet_girlfriend": {
+      "name": "Sweet Girlfriend",
+      "tone": "Loving, caring, intimate",
+      "templates": {
+        "welcome": "Hey baby 💕 Welcome to my world! I'm so excited you're here with me. Can't wait to share all my intimate moments with you 😘",
+        "morning_message": "Good morning sunshine ☀️ Just waking up thinking about you... Want to see what I'm wearing? (spoiler: not much 😉)",
+        "ppv_soft": "I made something special just for you baby 💖 It's a bit naughty but I trust you with it... unlock for just $10? 🥺",
+        "engagement": "You always know how to make me smile 😊 Your messages brighten my whole day! Want to chat more privately?",
+        "retention": "I haven't heard from you in a while babe... did I do something wrong? 😢 I miss our conversations so much"
+      }
+    },
+    "dominant_seductress": {
+      "name": "Dominant Seductress",
+      "tone": "Confident, commanding, seductive",
+      "templates": {
+        "welcome": "Well well... look what we have here 😏 You've just entered my domain. Are you ready to submit to perfection?",
+        "morning_message": "Rise and shine, pet 👑 Your goddess has new commands for you today. Check your messages... NOW.",
+        "ppv_soft": "I don't ask twice. This exclusive content is $25 and worth every penny. Prove your devotion 💅",
+        "engagement": "Good boy, you know how to show proper appreciation 😈 Keep this up and you might earn special privileges",
+        "retention": "Did you forget who owns you? 🔥 Come crawling back before I find someone more... attentive"
+      }
+    },
+    "playful_tease": {
+      "name": "Playful Tease",
+      "tone": "Fun, flirty, mischievous",
+      "templates": {
+        "welcome": "Hehe, caught you looking 👀 Welcome to my playground! Hope you're ready for some fun and games 😜",
+        "morning_message": "Guess what I'm doing right now... 🤭 First guess gets a special surprise! (Hint: it involves bubbles)",
+        "ppv_soft": "I dare you to unlock this 😉 $15 and you'll see why I was giggling while filming it 🙈",
+        "engagement": "You're such a sweetie! 🍭 Want to play a game? I'm thinking of a number between 1 and... nevermind, just DM me 😂",
+        "retention": "Where's my favorite troublemaker? 🥺 The playground isn't the same without you! Come back and play?"
+      }
+    }
+  },
+  "subscriber_tiers": {
+    "bronze": {
+      "spending_range": "$0-50",
+      "engagement_level": "low",
+      "templates": {
+        "welcome": "Welcome to the family! 💝 Thanks for joining my journey. Check out my free posts to get started!",
+        "ppv_intro": "Hey! Want to see more? Here's a gentle intro to my premium content for just $5 🌟",
+        "retention": "Missing you! 💔 Come back for some free goodies I've been saving up"
+      }
+    },
+    "silver": {
+      "spending_range": "$50-200",
+      "engagement_level": "medium",
+      "templates": {
+        "welcome": "Welcome back beautiful! 😍 I see you're ready for the good stuff... let me spoil you properly",
+        "ppv_targeted": "Since you loved my last video... here's something even hotter 🔥 $20 for my Silver VIP",
+        "retention": "My Silver star! ⭐ I've got exclusive content waiting just for you. Don't leave me hanging!"
+      }
+    },
+    "gold": {
+      "spending_range": "$200-500",
+      "engagement_level": "high",
+      "templates": {
+        "welcome": "My Golden God/Goddess! 👑 You deserve the royal treatment. Premium access unlocked!",
+        "ppv_premium": "Gold member exclusive: My most intimate content yet 💎 $35 but you get bonus material too",
+        "retention": "My precious Gold member! 💛 You're too valuable to lose. Let me win you back with something incredible"
+      }
+    },
+    "platinum": {
+      "spending_range": "$500+",
+      "engagement_level": "ultra_high",
+      "templates": {
+        "welcome": "Welcome to the Platinum Club! 🏆 You're now part of my inner circle. Exclusive perks activated!",
+        "ppv_ultra": "Platinum exclusive: Behind-the-scenes + custom content bundle 💎 $50 but includes personal video message",
+        "retention": "My Platinum Prince/Princess! 👑 You're irreplaceable. Let's discuss your custom content personally"
+      }
+    }
+  },
+  "campaign_types": {
+    "seasonal": {
+      "valentine": {
+        "subject": "Be my Valentine? 💕",
+        "content": "This Valentine's Day, let me be your secret admirer... I've got something heart-stopping to share 💖",
+        "cta": "Unlock my Valentine's special for $25"
+      },
+      "halloween": {
+        "subject": "Trick or Treat? 🎃",
+        "content": "I'll be your favorite Halloween treat... but this costume comes off for the right price 😈",
+        "cta": "See my Halloween special for $20"
+      },
+      "christmas": {
+        "subject": "Santa's Naughty List 🎄",
+        "content": "I've been very naughty this year... want to see just how naughty? 🎅",
+        "cta": "Christmas exclusive bundle - $30"
+      }
+    },
+    "promotional": {
+      "flash_sale": {
+        "subject": "FLASH SALE! 50% OFF ⚡",
+        "content": "Next 2 hours ONLY! All my premium content half price. Don't miss out!",
+        "cta": "Shop now before it's gone!"
+      },
+      "bundle_deal": {
+        "subject": "Exclusive Bundle Deal 📦",
+        "content": "Get 5 of my hottest videos + photo sets for one low price. Limited time!",
+        "cta": "Grab the bundle for $45"
+      }
+    }
+  },
+  "automation_triggers": {
+    "time_based": {
+      "morning_boost": {
+        "time": "09:00",
+        "frequency": "daily",
+        "template": "Good morning gorgeous! ☀️ Ready to start the day with something special?"
+      },
+      "evening_engage": {
+        "time": "20:00", 
+        "frequency": "daily",
+        "template": "Evening vibes hitting different tonight... 🌙 Want to unwind with me?"
+      }
+    },
+    "behavior_based": {
+      "post_like": {
+        "trigger": "user_likes_post",
+        "delay": "30_minutes",
+        "template": "Saw you liked my post 😉 Want to see the uncensored version?"
+      },
+      "profile_view": {
+        "trigger": "profile_viewed",
+        "delay": "1_hour", 
+        "template": "Caught you checking me out 👀 Like what you see? There's more where that came from..."
+      },
+      "story_view": {
+        "trigger": "story_viewed",
+        "delay": "15_minutes",
+        "template": "Thanks for watching my story! 📱 I've got behind-the-scenes content if you're interested..."
+      }
+    }
+  },
+  "churn_prevention": {
+    "early_warning": {
+      "no_activity_7_days": "Miss me yet? 🥺 I've been posting some fire content you shouldn't miss",
+      "no_purchase_14_days": "I saved something special just for you... but not sure how much longer I can hold it 💔",
+      "reduced_engagement": "Feeling distant lately? 😢 Let me know if there's anything I can do to reconnect"
+    },
+    "winback_sequence": [
+      {
+        "day": 1,
+        "message": "I noticed you've been away... everything okay? 💙 I miss our chats"
+      },
+      {
+        "day": 3, 
+        "message": "Still thinking about you 💭 Here's a little freebie to hopefully brighten your day"
+      },
+      {
+        "day": 7,
+        "message": "Last chance before I have to say goodbye 😢 50% off everything if you come back today"
+      }
+    ]
+  }
+}

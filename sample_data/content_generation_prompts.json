@@ -1,0 +1,207 @@
+{
+  "caption_templates": {
+    "teaser_posts": [
+      "Something special brewing tonight... 😏 Can you guess what it is? First right answer gets a little surprise 💕",
+      "Caught me at the perfect moment 📸 Should I share the rest or keep you guessing? 🤭",
+      "This angle hits different, don't you think? 😉 More where this came from if you want it...",
+      "Feeling a little mischievous today 😈 Want to see what trouble I'm getting into?",
+      "Preview of tonight's content drop 🔥 Ready for the full show?"
+    ],
+    "ppv_promotion": [
+      "Unlock this exclusive content for just ${price} 💎 Trust me, it's worth every penny...",
+      "Behind the scenes footage from today's shoot 🎬 Only ${price} to see how it all went down",
+      "This didn't make it to my feed... too spicy 🌶️ But it can be yours for ${price}",
+      "VIP exclusive: My most intimate moments from this week 💋 ${price} gets you access",
+      "Custom content just finished rendering 🎥 ${price} and it's all yours, baby"
+    ],
+    "engagement_posts": [
+      "Good morning beautiful souls ☀️ How are we feeling today? Drop an emoji to tell me your mood!",
+      "Question time: Coffee or tea? ☕ Wrong answers only 😂",
+      "Rate my outfit from 1-10 💃 Be honest... I can take it!",
+      "Storytime: Tell me about the best part of your day so far 💬",
+      "If you could ask me anything, what would it be? 🤔 Getting curious about you all..."
+    ],
+    "lifestyle_posts": [
+      "Sunday self-care vibes 🛁 What's your favorite way to unwind?",
+      "Gym session complete ✅ Nothing beats that post-workout glow!",
+      "Cooking adventures in the kitchen 👩‍🍳 Hope it turns out edible 😅",
+      "Netflix and chill kind of evening 📺 Any good recommendations?",
+      "Morning coffee ritual ☕ How do you like to start your day?"
+    ]
+  },
+  "ai_prompt_templates": {
+    "image_generation": {
+      "portrait_prompts": [
+        "Professional portrait photography of an attractive woman, soft natural lighting, elegant pose, high quality DSLR, 85mm lens, shallow depth of field",
+        "Intimate boudoir photography, dramatic lighting, artistic shadows, luxurious bedroom setting, professional photography",
+        "Fashion photography, confident pose, studio lighting, editorial style, high fashion aesthetic, professional model",
+        "Artistic portrait, golden hour lighting, outdoor setting, natural beauty, professional photography, magazine quality"
+      ],
+      "lifestyle_prompts": [
+        "Candid lifestyle photography, cozy home environment, natural lighting, authentic moments, professional photography",
+        "Workout photography, athletic wear, gym setting, dynamic poses, fitness lifestyle, professional sports photography",
+        "Travel photography, beautiful destination, vacation vibes, sunset lighting, wanderlust aesthetic",
+        "Coffee shop photography, casual morning vibes, natural lighting, everyday luxury, lifestyle content"
+      ],
+      "artistic_prompts": [
+        "Fine art photography, conceptual portrait, creative lighting, artistic composition, gallery worthy",
+        "Black and white portrait, dramatic contrast, classic elegance, timeless beauty, professional artistry",
+        "Vintage aesthetic, retro styling, film photography look, nostalgic mood, classic beauty",
+        "Modern minimalist portrait, clean composition, simple background, contemporary style"
+      ]
+    },
+    "caption_generation": {
+      "system_prompt": "You are a social media content creator who writes engaging, flirty, and authentic captions for OnlyFans. Your tone should be playful, confident, and personally connected. Use emojis naturally and create captions that encourage engagement and interaction.",
+      "content_types": {
+        "teaser": "Write a teaser caption that hints at exclusive content without being explicit. Should create curiosity and FOMO.",
+        "ppv_promo": "Write a promotional caption for pay-per-view content. Should be enticing and clearly state the value proposition.",
+        "engagement": "Write a caption designed to generate comments and interaction. Should ask questions or encourage participation.",
+        "lifestyle": "Write a casual, relatable caption about daily life that builds personal connection with followers."
+      }
+    }
+  },
+  "content_optimization": {
+    "best_performing_elements": [
+      "Emojis increase engagement by 42%",
+      "Questions in captions boost comments by 67%", 
+      "Personal stories increase connection by 38%",
+      "Call-to-actions improve conversion by 54%",
+      "Teasers generate 78% more PPV sales"
+    ],
+    "posting_schedule_optimization": {
+      "peak_engagement_times": {
+        "monday": ["10:00", "15:00", "20:00"],
+        "tuesday": ["09:00", "14:00", "19:00"],
+        "wednesday": ["10:00", "16:00", "21:00"],
+        "thursday": ["11:00", "15:00", "20:00"],
+        "friday": ["10:00", "17:00", "22:00"],
+        "saturday": ["11:00", "16:00", "21:00"],
+        "sunday": ["12:00", "18:00", "20:00"]
+      },
+      "content_type_timing": {
+        "teaser_posts": "morning",
+        "ppv_drops": "evening",
+        "engagement_posts": "afternoon", 
+        "lifestyle_content": "morning"
+      }
+    }
+  },
+  "ai_content_workflows": [
+    {
+      "id": "morning_post_generator",
+      "name": "Morning Post Auto-Generator",
+      "trigger": "daily_08:00",
+      "steps": [
+        {
+          "action": "generate_caption",
+          "type": "lifestyle",
+          "context": "morning_routine"
+        },
+        {
+          "action": "select_image", 
+          "criteria": "casual_morning_aesthetic"
+        },
+        {
+          "action": "schedule_post",
+          "time": "09:00"
+        }
+      ]
+    },
+    {
+      "id": "ppv_campaign_creator",
+      "name": "PPV Campaign Content Creator",
+      "trigger": "manual",
+      "steps": [
+        {
+          "action": "generate_teaser_caption",
+          "context": "{{content_theme}}"
+        },
+        {
+          "action": "generate_ppv_description",
+          "price": "{{ppv_price}}"
+        },
+        {
+          "action": "create_promotional_sequence",
+          "duration": "3_days"
+        }
+      ]
+    },
+    {
+      "id": "engagement_booster",
+      "name": "Engagement Booster Campaign",
+      "trigger": "low_engagement_detected",
+      "steps": [
+        {
+          "action": "generate_question_post",
+          "type": "interactive"
+        },
+        {
+          "action": "create_story_series",
+          "theme": "behind_the_scenes"
+        },
+        {
+          "action": "schedule_dm_campaign",
+          "target": "inactive_subscribers"
+        }
+      ]
+    }
+  ],
+  "content_calendar_templates": {
+    "weekly_structure": {
+      "monday": {
+        "type": "motivation_monday",
+        "content": "lifestyle_post",
+        "timing": "09:00"
+      },
+      "tuesday": {
+        "type": "teaser_tuesday", 
+        "content": "preview_content",
+        "timing": "15:00"
+      },
+      "wednesday": {
+        "type": "wildcard_wednesday",
+        "content": "surprise_content",
+        "timing": "20:00"
+      },
+      "thursday": {
+        "type": "throwback_thursday",
+        "content": "favorite_moments",
+        "timing": "16:00"
+      },
+      "friday": {
+        "type": "freaky_friday",
+        "content": "spicy_preview",
+        "timing": "21:00"
+      },
+      "saturday": {
+        "type": "special_saturday",
+        "content": "ppv_drop",
+        "timing": "19:00"
+      },
+      "sunday": {
+        "type": "sunday_funday",
+        "content": "relaxed_lifestyle",
+        "timing": "14:00"
+      }
+    }
+  },
+  "personalization_variables": {
+    "subscriber_data": [
+      "{{first_name}}",
+      "{{subscription_tier}}",
+      "{{days_subscribed}}",
+      "{{favorite_content_type}}",
+      "{{last_interaction}}",
+      "{{spending_level}}",
+      "{{timezone}}"
+    ],
+    "content_variables": [
+      "{{model_name}}",
+      "{{content_type}}",
+      "{{price}}",
+      "{{discount_percentage}}",
+      "{{limited_time}}",
+      "{{exclusive_access}}"
+    ]
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "active_campaigns": [
+    {
+      "id": "camp_001",
+      "name": "Valentine's Day Special 2025",
+      "type": "seasonal",
+      "status": "active",
+      "start_date": "2025-02-10",
+      "end_date": "2025-02-16",
+      "target_audience": {
+        "tiers": ["silver", "gold", "platinum"],
+        "segments": ["engaged", "top_fan"],
+        "exclude_recent_purchasers": false
+      },
+      "messaging": {
+        "subject": "Be my Valentine? 💕",
+        "content": "This Valentine's Day, let me be your secret admirer... I've got something heart-stopping to share 💖",
+        "cta": "Unlock my Valentine's special for $25",
+        "persona": "sweet_girlfriend"
+      },
+      "schedule": {
+        "send_times": ["10:00", "15:00", "20:00"],
+        "frequency": "daily",
+        "max_messages_per_user": 3
+      },
+      "performance": {
+        "sent": 1250,
+        "opened": 875,
+        "clicked": 287,
+        "purchased": 89,
+        "revenue": 2225,
+        "open_rate": 0.70,
+        "click_rate": 0.33,
+        "conversion_rate": 0.31
+      }
+    },
+    {
+      "id": "camp_002", 
+      "name": "New Subscriber Onboarding",
+      "type": "automated",
+      "status": "active",
+      "trigger": "new_subscription",
+      "target_audience": {
+        "tiers": ["bronze"],
+        "new_subscribers_only": true
+      },
+      "messaging_sequence": [
+        {
+          "day": 0,
+          "subject": "Welcome to my world! 💕",
+          "content": "Hey gorgeous! Welcome to my exclusive content. I'm so excited you're here with me 😘",
+          "cta": "Explore my free posts",
+          "persona": "sweet_girlfriend"
+        },
+        {
+          "day": 1,
+          "subject": "Getting comfortable? 😉",
+          "content": "Hope you're enjoying the free content... ready to see what's behind the paywall? 🔥",
+          "cta": "Unlock premium for $10",
+          "persona": "playful_tease"
+        },
+        {
+          "day": 3,
+          "subject": "Miss me yet? 🥺",
+          "content": "I've been creating some amazing content... want a sneak peek of what you're missing?",
+          "cta": "See premium previews",
+          "persona": "sweet_girlfriend"
+        }
+      ],
+      "performance": {
+        "total_enrolled": 456,
+        "completed_sequence": 234,
+        "avg_conversion_rate": 0.28,
+        "total_revenue": 1278
+      }
+    },
+    {
+      "id": "camp_003",
+      "name": "Churn Prevention - Week 2",
+      "type": "retention",
+      "status": "active", 
+      "trigger": "no_activity_14_days",
+      "target_audience": {
+        "segments": ["at_risk"],
+        "exclude_recent_contacted": true
+      },
+      "messaging": {
+        "subject": "I miss our chats 😢",
+        "content": "Where'd you go, babe? I just dropped something HOT — want me to show you? First unlock back is 50% off 🔥",
+        "cta": "Come back for 50% off",
+        "persona": "sweet_girlfriend",
+        "discount_code": "COMEBACK50"
+      },
+      "performance": {
+        "sent": 89,
+        "opened": 52,
+        "clicked": 18,
+        "purchased": 12,
+        "revenue": 180,
+        "winback_rate": 0.13
+      }
+    }
+  ],
+  "upcoming_campaigns": [
+    {
+      "id": "camp_004",
+      "name": "Spring Break Promo",
+      "type": "seasonal",
+      "status": "scheduled",
+      "start_date": "2025-03-15",
+      "end_date": "2025-03-25",
+      "target_audience": {
+        "tiers": ["bronze", "silver", "gold"],
+        "segments": ["new", "engaged"]
+      },
+      "messaging": {
+        "subject": "Spring Break with me? 🌺",
+        "content": "Ready for some spring break fun? I've got bikini content that'll make you feel like you're on vacation with me 🏖️",
+        "cta": "Spring break bundle - $35",
+        "persona": "playful_tease"
+      }
+    },
+    {
+      "id": "camp_005",
+      "name": "Platinum VIP Exclusive",
+      "type": "vip_exclusive",
+      "status": "draft",
+      "target_audience": {
+        "tiers": ["platinum"],
+        "min_spending": 500
+      },
+      "messaging": {
+        "subject": "Platinum Eyes Only 👑",
+        "content": "My most exclusive content yet - only for my Platinum royalty. Behind-the-scenes + custom video message included 💎",
+        "cta": "Platinum exclusive - $75",
+        "persona": "dominant_seductress"
+      }
+    }
+  ],
+  "campaign_templates": [
+    {
+      "id": "template_flash_sale",
+      "name": "Flash Sale Template",
+      "type": "promotional",
+      "duration_hours": 4,
+      "messaging": {
+        "subject": "FLASH SALE! {discount}% OFF ⚡",
+        "content": "Next {duration} hours ONLY! All my premium content {discount}% off. Don't miss out on this deal!",
+        "cta": "Shop now before it's gone!",
+        "urgency": "high"
+      },
+      "variables": {
+        "discount": [25, 30, 40, 50],
+        "duration": [2, 4, 6, 12]
+      }
+    },
+    {
+      "id": "template_birthday",
+      "name": "Birthday Special Template", 
+      "type": "seasonal",
+      "messaging": {
+        "subject": "It's my birthday! 🎂",
+        "content": "Celebrating another year around the sun! Want to give me the best birthday gift? Your attention and maybe a little tip? 💕",
+        "cta": "Birthday special bundle - $30",
+        "persona": "sweet_girlfriend"
+      }
+    },
+    {
+      "id": "template_milestone",
+      "name": "Follower Milestone Template",
+      "type": "celebration",
+      "messaging": {
+        "subject": "WE DID IT! {milestone} followers! 🎉",
+        "content": "Thanks to amazing fans like you, we hit {milestone} followers! Here's a special thank you bundle at a discounted price 💖",
+        "cta": "Celebration bundle - {price}",
+        "persona": "playful_tease"
+      },
+      "variables": {
+        "milestone": [1000, 5000, 10000, 25000],
+        "price": [15, 20, 25, 30]
+      }
+    }
+  ],
+  "a_b_tests": [
+    {
+      "id": "test_001",
+      "name": "Subject Line Emoji Test",
+      "status": "running",
+      "variants": [
+        {
+          "id": "A",
+          "subject": "Miss me yet?",
+          "sent": 250,
+          "opened": 125,
+          "open_rate": 0.50
+        },
+        {
+          "id": "B", 
+          "subject": "Miss me yet? 🥺",
+          "sent": 250,
+          "opened": 165,
+          "open_rate": 0.66
+        }
+      ],
+      "winner": "B",
+      "confidence": 0.95
+    },
+    {
+      "id": "test_002",
+      "name": "CTA Button Text",
+      "status": "completed",
+      "variants": [
+        {
+          "id": "A",
+          "cta": "Unlock now",
+          "sent": 300,
+          "clicked": 45,
+          "click_rate": 0.15
+        },
+        {
+          "id": "B",
+          "cta": "See what's waiting 😉",
+          "sent": 300, 
+          "clicked": 72,
+          "click_rate": 0.24
+        }
+      ],
+      "winner": "B",
+      "confidence": 0.98
+    }
+  ],
+  "performance_benchmarks": {
+    "industry_averages": {
+      "open_rate": 0.45,
+      "click_rate": 0.12,
+      "conversion_rate": 0.08,
+      "revenue_per_subscriber": 15.50
+    },
+    "our_performance": {
+      "open_rate": 0.68,
+      "click_rate": 0.28,
+      "conversion_rate": 0.22,
+      "revenue_per_subscriber": 28.75
+    },
+    "top_performer_benchmarks": {
+      "open_rate": 0.75,
+      "click_rate": 0.35,
+      "conversion_rate": 0.30,
+      "revenue_per_subscriber": 45.00
+    }
+  }
+}

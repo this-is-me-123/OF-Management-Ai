@@ -1,0 +1,233 @@
+{
+  "kpis": {
+    "revenue": {
+      "current_month": 12875,
+      "previous_month": 9650,
+      "growth_rate": 0.334,
+      "target": 15000,
+      "daily_average": 415.32,
+      "breakdown": {
+        "subscriptions": 4200,
+        "ppv_sales": 6800,
+        "tips": 1875
+      }
+    },
+    "subscribers": {
+      "total_active": 1456,
+      "new_this_month": 234,
+      "churned_this_month": 89,
+      "net_growth": 145,
+      "churn_rate": 0.061,
+      "lifetime_value": 187.50,
+      "by_tier": {
+        "bronze": 856,
+        "silver": 398,
+        "gold": 156,
+        "platinum": 46
+      }
+    },
+    "engagement": {
+      "message_response_rate": 0.68,
+      "post_engagement_rate": 0.41,
+      "story_completion_rate": 0.73,
+      "average_session_duration": "8:34",
+      "messages_per_subscriber": 4.2
+    },
+    "content_performance": {
+      "posts_this_month": 45,
+      "average_likes_per_post": 234,
+      "average_comments_per_post": 28,
+      "top_performing_content_type": "lingerie",
+      "ppv_conversion_rate": 0.31
+    }
+  },
+  "trends": {
+    "revenue_trend_30_days": [
+      {"date": "2025-01-15", "revenue": 298, "subscribers": 1421},
+      {"date": "2025-01-16", "revenue": 456, "subscribers": 1423},
+      {"date": "2025-01-17", "revenue": 512, "subscribers": 1427},
+      {"date": "2025-01-18", "revenue": 389, "subscribers": 1425},
+      {"date": "2025-01-19", "revenue": 634, "subscribers": 1431},
+      {"date": "2025-01-20", "revenue": 723, "subscribers": 1436},
+      {"date": "2025-01-21", "revenue": 445, "subscribers": 1441},
+      {"date": "2025-01-22", "revenue": 578, "subscribers": 1445},
+      {"date": "2025-01-23", "revenue": 692, "subscribers": 1448},
+      {"date": "2025-01-24", "revenue": 534, "subscribers": 1452},
+      {"date": "2025-01-25", "revenue": 601, "subscribers": 1456}
+    ],
+    "engagement_trend_7_days": [
+      {"date": "2025-01-19", "messages_sent": 89, "response_rate": 0.71},
+      {"date": "2025-01-20", "messages_sent": 156, "response_rate": 0.68},
+      {"date": "2025-01-21", "messages_sent": 134, "response_rate": 0.72},
+      {"date": "2025-01-22", "messages_sent": 98, "response_rate": 0.69},
+      {"date": "2025-01-23", "messages_sent": 203, "response_rate": 0.74},
+      {"date": "2025-01-24", "messages_sent": 167, "response_rate": 0.66},
+      {"date": "2025-01-25", "messages_sent": 142, "response_rate": 0.70}
+    ]
+  },
+  "content_analytics": {
+    "top_performing_posts": [
+      {
+        "id": "post_001",
+        "type": "photo",
+        "category": "lingerie",
+        "likes": 456,
+        "comments": 67,
+        "engagement_rate": 0.52,
+        "ppv_generated": 234,
+        "date": "2025-01-23"
+      },
+      {
+        "id": "post_002",
+        "type": "video",
+        "category": "teaser",
+        "likes": 389,
+        "comments": 43,
+        "engagement_rate": 0.48,
+        "ppv_generated": 567,
+        "date": "2025-01-21"
+      },
+      {
+        "id": "post_003",
+        "type": "photo_set",
+        "category": "outdoor",
+        "likes": 345,
+        "comments": 52,
+        "engagement_rate": 0.45,
+        "ppv_generated": 123,
+        "date": "2025-01-20"
+      }
+    ],
+    "content_categories": {
+      "lingerie": {"posts": 12, "avg_engagement": 0.48, "revenue": 2340},
+      "teaser": {"posts": 8, "avg_engagement": 0.52, "revenue": 3456},
+      "outdoor": {"posts": 6, "avg_engagement": 0.41, "revenue": 1234},
+      "casual": {"posts": 15, "avg_engagement": 0.38, "revenue": 1876},
+      "explicit": {"posts": 4, "avg_engagement": 0.67, "revenue": 2890}
+    },
+    "optimal_posting_times": {
+      "weekdays": ["10:00", "15:00", "21:00"],
+      "weekends": ["11:00", "16:00", "20:00"],
+      "best_day": "Friday",
+      "worst_day": "Tuesday"
+    }
+  },
+  "subscriber_analytics": {
+    "demographics": {
+      "age_groups": {
+        "18-24": 0.15,
+        "25-34": 0.42,
+        "35-44": 0.28,
+        "45-54": 0.12,
+        "55+": 0.03
+      },
+      "geo_distribution": {
+        "US": 0.45,
+        "UK": 0.18,
+        "Canada": 0.12,
+        "Australia": 0.08,
+        "Germany": 0.07,
+        "Other": 0.10
+      },
+      "device_usage": {
+        "mobile": 0.78,
+        "desktop": 0.18,
+        "tablet": 0.04
+      }
+    },
+    "behavior_patterns": {
+      "most_active_hours": ["20:00-23:00", "12:00-14:00", "08:00-10:00"],
+      "average_session_length": "8:34",
+      "pages_per_session": 4.2,
+      "bounce_rate": 0.23
+    },
+    "spending_patterns": {
+      "average_monthly_spend": {
+        "bronze": 18.50,
+        "silver": 67.30,
+        "gold": 156.80,
+        "platinum": 387.90
+      },
+      "purchase_frequency": {
+        "bronze": 1.2,
+        "silver": 3.4,
+        "gold": 6.7,
+        "platinum": 12.3
+      }
+    }
+  },
+  "forecasting": {
+    "revenue_projection_30_days": {
+      "conservative": 14500,
+      "realistic": 16800,
+      "optimistic": 19200,
+      "factors": ["seasonal_trends", "campaign_performance", "subscriber_growth"]
+    },
+    "subscriber_growth_projection": {
+      "new_subs_next_month": 285,
+      "expected_churn": 95,
+      "net_growth": 190,
+      "confidence_interval": 0.85
+    },
+    "churn_risk_analysis": {
+      "high_risk_subscribers": 67,
+      "medium_risk_subscribers": 134,
+      "predicted_churn_rate": 0.067,
+      "prevention_opportunity": 856
+    }
+  },
+  "competitive_analysis": {
+    "industry_benchmarks": {
+      "average_revenue_per_user": 145.60,
+      "average_churn_rate": 0.089,
+      "average_engagement_rate": 0.34,
+      "average_conversion_rate": 0.18
+    },
+    "our_performance_vs_industry": {
+      "revenue_per_user": "+28.7%",
+      "churn_rate": "-31.5%",
+      "engagement_rate": "+20.6%",
+      "conversion_rate": "+72.2%"
+    },
+    "top_performer_benchmarks": {
+      "revenue_per_user": 298.50,
+      "churn_rate": 0.045,
+      "engagement_rate": 0.58,
+      "conversion_rate": 0.42
+    }
+  },
+  "alert_thresholds": {
+    "revenue_drop": {
+      "warning": -0.15,
+      "critical": -0.30
+    },
+    "churn_rate": {
+      "warning": 0.08,
+      "critical": 0.12
+    },
+    "engagement_drop": {
+      "warning": -0.20,
+      "critical": -0.35
+    }
+  },
+  "automated_insights": [
+    {
+      "type": "positive",
+      "priority": "high",
+      "message": "Revenue is up 33.4% this month! Your Valentine's campaign is performing exceptionally well.",
+      "action": "Consider extending similar seasonal campaigns"
+    },
+    {
+      "type": "warning", 
+      "priority": "medium",
+      "message": "Engagement on Tuesday posts is 23% below average",
+      "action": "Try posting at different times or different content types on Tuesdays"
+    },
+    {
+      "type": "opportunity",
+      "priority": "high", 
+      "message": "67 subscribers are at high churn risk but haven't been contacted in 10+ days",
+      "action": "Launch targeted retention campaign immediately"
+    }
+  ]
+}
