@@ -1,0 +1,38 @@
+{
+  "name": "ofem-creator-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OFEM Creator Interface - Content capture and optimization for OnlyFans creators",
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "vite build",
+    "preview": "vite preview --port 4174",
+    "serve": "vite preview --port 4174"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.1",
+    "framer-motion": "^10.16.4",
+    "lucide-react": "^0.263.1",
+    "react-hot-toast": "^2.4.1",
+    "axios": "^1.6.0",
+    "date-fns": "^4.1.0",
+    "clsx": "^2.0.0",
+    "react-camera-pro": "^1.4.0",
+    "react-dropzone": "^14.2.3",
+    "compressorjs": "^1.2.1",
+    "react-webcam": "^7.1.1",
+    "react-cropper": "^2.3.3",
+    "cropperjs": "^1.6.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.5.0",
+    "vite": "^5.4.19",
+    "vite-plugin-pwa": "^0.17.0",
+    "workbox-window": "^7.0.0",
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
+  }
+}
