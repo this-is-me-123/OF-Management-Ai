@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
-// import puppeteer from 'puppeteer'; // No longer needed as loginOnlyFans handles browser launch
+import fs from 'fs';
 import loginOnlyFans from '../ai-backend/proxy/puppeteerLogin.js';
 
 const db = new Database(path.resolve('logs.db'));
@@ -13,8 +13,8 @@ async function processJob(job) {
 
     let result = {}; // Initialize result
     let browser = null;
-
     let page; // Declare page here to be accessible in this scope
+
     try {
       console.log(`[Worker] Attempting OnlyFans login for job ${job.id}`);
       // loginOnlyFans handles browser launch using puppeteer-extra with stealth and proxy
@@ -23,33 +23,26 @@ async function processJob(job) {
       page = loginResult.page;
       console.log(`[Worker] OnlyFans login successful, page obtained for job ${job.id}`);
 
-      console.log(`[Worker] Processing job ${job.id} with folder: ${job.folder}`);
+      console.log(`[Worker] Processing job ${job.id} with type: ${job.type}`);
 
-      // TODO: Navigate to the content posting page
-      // await page.goto('https://onlyfans.com/my/posts/create', { waitUntil: 'networkidle2' });
-
-      // TODO: Read content from job.folder (e.g., text, media files)
-      // const contentToPost = readContentFromFolder(job.folder);
-
-      // TODO: Use Puppeteer to fill in the post details and upload media
-      // await page.type('textarea[name="text"]', contentToPost.text);
-      // if (contentToPost.mediaPath) {
-      //   const fileInput = await page.$('input[type=file]');
-      //   await fileInput.uploadFile(contentToPost.mediaPath);
-      // }
-      // await page.click('button[type="submit"]'); // Or whatever the post button selector is
-      // await page.waitForNavigation({ waitUntil: 'networkidle2' });
-
-      console.log(`[Worker] Puppeteer actions for job ${job.id} would be performed here.`);
-      // For now, simulate a successful result
-      result = {
-        message: `Successfully processed folder: ${job.folder}`,
-        // postedUrl: page.url() // Example: capture the URL of the new post
-      };
+      // Handle different job types
+      switch (job.type) {
+        case 'post_content':
+          result = await handlePostContent(page, job);
+          break;
+        case 'send_dm':
+          result = await handleSendDM(page, job);
+          break;
+        default:
+          console.log(`[Worker] Processing job ${job.id} with folder: ${job.folder}`);
+          // Legacy folder-based processing
+          result = {
+            message: `Successfully processed folder: ${job.folder}`,
+          };
+      }
 
     } catch (puppeteerError) {
       console.error(`[Worker] Puppeteer error during job ${job.id}:`, puppeteerError.message);
-      // Update the main error object to reflect Puppeteer failure if not already an error
       throw puppeteerError; // Re-throw to be caught by the outer try-catch
     } finally {
       if (browser) {
@@ -70,12 +63,119 @@ async function processJob(job) {
   }
 }
 
+/**
+ * Handle posting content to OnlyFans
+ */
+async function handlePostContent(page, job) {
+  try {
+    const content = JSON.parse(job.content);
+    console.log(`[Worker] Posting content for job ${job.id}:`, content.text?.substring(0, 50) + '...');
+
+    // Navigate to the content posting page
+    await page.goto('https://onlyfans.com/my/posts/create', { 
+      waitUntil: 'networkidle2',
+      timeout: 30000 
+    });
+
+    // Wait for the post creation form to load
+    await page.waitForSelector('form[data-name="PostForm"]', { timeout: 15000 });
+    
+    // Add text content if provided
+    if (content.text) {
+      const textAreaSelector = 'div[data-placeholder="What\'s on your mind?"]';
+      await page.waitForSelector(textAreaSelector, { timeout: 10000 });
+      await page.click(textAreaSelector);
+      await page.type(textAreaSelector, content.text, { delay: 50 });
+    }
+
+    // Handle media uploads if provided
+    if (content.media && content.media.length > 0) {
+      for (const mediaPath of content.media) {
+        if (fs.existsSync(mediaPath)) {
+          const fileInput = await page.$('input[type="file"]');
+          if (fileInput) {
+            await fileInput.uploadFile(mediaPath);
+            // Wait for upload to process
+            await page.waitForTimeout(2000);
+          }
+        }
+      }
+    }
+
+    // Add delay before posting
+    await page.waitForTimeout(1000);
+
+    // Click the post button
+    const postButtonSelector = 'button[data-name="post"]';
+    await page.waitForSelector(postButtonSelector, { timeout: 10000 });
+    await page.click(postButtonSelector);
+
+    // Wait for post to be published
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 });
+
+    const postedUrl = page.url();
+    console.log(`[Worker] Content posted successfully to: ${postedUrl}`);
+
+    return {
+      success: true,
+      message: 'Content posted to OnlyFans successfully',
+      postedUrl: postedUrl,
+      contentPreview: content.text?.substring(0, 100),
+      mediaCount: content.media?.length || 0
+    };
+
+  } catch (error) {
+    console.error(`[Worker] Error posting content:`, error.message);
+    
+    // Take screenshot for debugging
+    try {
+      await page.screenshot({ 
+        path: `post_error_${job.id}_${Date.now()}.png`, 
+        fullPage: true 
+      });
+    } catch (screenshotError) {
+      console.error('[Worker] Error taking screenshot:', screenshotError);
+    }
+
+    throw new Error(`Failed to post content: ${error.message}`);
+  }
+}
+
+/**
+ * Handle sending direct messages
+ */
+async function handleSendDM(page, job) {
+  try {
+    const content = JSON.parse(job.content);
+    const { sendDirectMessage } = await import('../ai-backend/proxy/puppeteerActions.js');
+    
+    console.log(`[Worker] Sending DM for job ${job.id} to user: ${content.targetUserId}`);
+    
+    const result = await sendDirectMessage(page, content.targetUserId, content.message);
+    
+    if (result.success) {
+      return {
+        success: true,
+        message: `DM sent successfully to user ${content.targetUserId}`,
+        targetUserId: content.targetUserId,
+        messagePreview: content.message.substring(0, 50) + '...'
+      };
+    } else {
+      throw new Error(result.error);
+    }
+
+  } catch (error) {
+    console.error(`[Worker] Error sending DM:`, error.message);
+    throw new Error(`Failed to send DM: ${error.message}`);
+  }
+}
+
 function poll() {
   const job = db
     .prepare("SELECT * FROM jobs WHERE status='queued' ORDER BY created_at ASC LIMIT 1")
     .get();
   if (job) {
-    console.log(`🔄 Processing job ${job.id}`);
+    console.log(`🔄 Processing job ${job.id} (type: ${job.type || 'legacy'})`);
     processJob(job);
   }
 }
