@@ -51,6 +51,14 @@ try {
 }
 
 try {
+  console.log('Loading content generation router...');
+  app.use('/content', require('./content'));
+  console.log('Content generation router loaded successfully');
+} catch (e) {
+  console.error('Failed to load content router:', e.message);
+}
+
+try {
   console.log('Loading proxy router...');
   app.use('/proxy', require('./proxy'));
   console.log('Proxy router loaded successfully');
